@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const coursesController = require("../controllers/courses.js");
+const coursesController = require("../controllers/courses.controller.js");
 const { wrapAsync } = require("../utils/wrapAsync.js");
 const { authMiddleware } = require("../middlewares/authMiddlewares.js");
 

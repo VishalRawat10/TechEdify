@@ -14,7 +14,7 @@
   --dark-bg-2: #303030;
   --dark-bg-1: #171717;
   --dark-bg-3: #212121;
-  --footer: #1b1b1e;
+  --footer: #22223b;
   --user-bg: #514b61;
   --user-card-bg: #2c2638;
   --user-input-bg: #3c364c;
@@ -52,11 +52,16 @@
   max-width: 100vw;
   overflow-x: hidden;
   min-height: 100vh;
+  background-color: #e9ecef;
 }
 
 .dark {
   background-color: var(--dark-bg-1);
   color: white;
+}
+
+.dark #root {
+  background-color: var(--dark-bg-1);
 }
 
 /* Navbar */

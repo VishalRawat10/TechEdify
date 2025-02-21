@@ -37,7 +37,7 @@ export default function Header() {
 
   return (
     <header className="z-50">
-      <nav className="max-w-screen overflow-x-hidden h-16 flex items-center px-4 md:px-12 bg-black/30 justify-between dark:bg-[var(--dark-bg-3)] border-b-2 border-[var(--base)]">
+      <nav className="max-w-screen overflow-x-hidden h-16 flex items-center px-4 md:px-12 bg-white justify-between dark:bg-[var(--dark-bg-3)]">
         {/* Logo */}
         <Link to="/" title="coding-shala">
           <img
@@ -62,7 +62,7 @@ export default function Header() {
         <div
           className={
             (sideMenu ? "translate-x-0 " : "translate-x-full ") +
-            "fixed top-2 right-0 transition-transform flex  flex-col w-fit items-center rounded-l-xl  gap-4 bg-white pb-6 shadow-[0_0_2px_1px_grey] dark:bg-[var(--dark-bg-2)] md:flex md:static md:bg-transparent md:flex-row md:h-full md:min-w-fit md:py-0 md:rounded-none md:dark:bg-transparent md:shadow-none md:px-6 md:gap-6 md:translate-x-0"
+            "fixed top-2 right-0 transition-transform flex  flex-col w-fit items-center rounded-l-xl  gap-4 bg-white pb-6 shadow-[0_0_2px_1px_grey] dark:bg-[var(--dark-bg-3)] md:flex md:static md:bg-transparent md:flex-row md:h-full md:min-w-fit md:py-0 md:rounded-none md:dark:bg-transparent md:shadow-none md:px-6 md:gap-6 md:translate-x-0"
           }
         >
           {/* Menu close button  */}

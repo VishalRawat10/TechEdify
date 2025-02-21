@@ -1,12 +1,12 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
 const cookieParser = require("cookie-parser");
 const coursesRouter = require("./routes/courses.js");
 const messageRouter = require("./routes/message.js");
 const userRouter = require("./routes/user.js");
+const { main } = require("./services/db.js");
 
 
 const port = process.env.PORT || 3000;
@@ -21,9 +21,9 @@ app.use(cors({
 }));
 
 // Routes =========================================================
-app.use("/courses", coursesRouter);
-app.use("/auth", userRouter);
-app.use("/message", messageRouter);
+app.use("/api/courses", coursesRouter);
+app.use("/api/user", userRouter);
+app.use("/api/message", messageRouter);
 
 
 //Error Handling middleware =======================================
@@ -39,10 +39,6 @@ app.listen(port, () => {
 
 
 //Connecting to mongoose ==========================================
-const main = async () => {
-    return await mongoose.connect(process.env.MONGODB_URL);
-}
-
 main().then((res) => {
     console.log("Mongoose is connected successfully...");
 })

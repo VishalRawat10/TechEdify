@@ -29,7 +29,7 @@ export default function Login() {
       password: "",
     });
     try {
-      const res = await apiInstance.post("/auth/login", userCredentials);
+      const res = await apiInstance.post("/user/login", userCredentials);
       setToken(res.data.token);
       setMessage("Welcome back to CodingShala!");
       setIsError(false);

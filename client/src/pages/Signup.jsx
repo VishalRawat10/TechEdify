@@ -33,7 +33,7 @@ export default function Signup() {
     });
     if (confirmPassword.current.value === userDetails.password) {
       try {
-        const res = await apiInstance.post("/auth/signup", userDetails);
+        const res = await apiInstance.post("/user/signup", userDetails);
         setCookie("token", res.data.token);
         setMessage("Welcome to CodingShala");
         setIsError(false);

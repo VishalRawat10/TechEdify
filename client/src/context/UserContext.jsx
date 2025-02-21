@@ -12,7 +12,7 @@ export const UserProvider = ({ children }) => {
 
   const getUser = async () => {
     try {
-      const res = await apiInstance.get("/auth/profile", {
+      const res = await apiInstance.get("/user/profile", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const messageController = require("../controllers/message");
+const messageController = require("../controllers/message.controller");
 const { body } = require("express-validator");
 
 router.route("/").post([
