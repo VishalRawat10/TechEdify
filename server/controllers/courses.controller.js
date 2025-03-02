@@ -14,7 +14,7 @@ module.exports.courses = async (req, res, next) => {
 
 }
 
-module.exports.showCourse = async (req, res, next) => {
+module.exports.getCourse = async (req, res, next) => {
     const { id } = req.params;
     try {
         const course = await Course.findById(id);

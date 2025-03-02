@@ -3,6 +3,8 @@ const BlacklistToken = require("../models/blacklistToken.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const { cloudinary } = require("../services/cloudinaryConfig.js");
+const { generateJwt } = require("../utils/jwtUtils.js");
 
 
 //SignUp controller
@@ -25,7 +27,7 @@ module.exports.signup = async (req, res, next) => {
             password: hashPassword
         });
         await newUser.save();
-        const token = jwt.sign({ _id: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
+        const token = generateJwt(newUser._id);
         return res.status(200).json({
             message: "Welcome to codingShala!", token
         });
@@ -47,7 +49,7 @@ module.exports.login = async (req, res, next) => {
         if (user) {
             const isMatch = await bcrypt.compare(password, user.password);
             if (isMatch) {
-                const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
+                const token = generateJwt(user._id);
                 return res.status(200).json({
                     token
                 });
@@ -78,4 +80,73 @@ module.exports.getUserProfile = async (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized! Token is expired!" });
     }
     return res.status(200).json({ user: req.user });
+}
+
+//Profile Image Upload
+module.exports.uploadProfileImg = async (req, res, next) => {
+    const token = await BlacklistToken.findOne({ token: req.token });
+    if (token) return res.status(401).json({ message: "Unauthorized!" });
+    try {
+        await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: req.file.path, filename: req.file.filename } } });
+        const newToken = generateJwt(req.user._id);
+        const newBlackToken = new BlacklistToken({
+            token: req.token
+        });
+        await newBlackToken.save();
+        res.status(200).json({ token: newToken });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error!", error: err.message });
+    }
+}
+
+//Destroy Profile Image
+module.exports.destroyProfileImg = async (req, res, next) => {
+    const token = await BlacklistToken.findOne({ token: req.token });
+    if (token) return res.status(401).json({ message: "Unauthorized!" });
+    try {
+        const result = await cloudinary.uploader.destroy(req.user.profileImg.filename);
+        if (result.result === "not found") return res.status(400).json({ message: "Image not found!" });
+        await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: "", filename: "" } } });
+        const newToken = generateJwt(req.user._id);
+        const newBlackToken = new BlacklistToken({
+            token: req.token
+        });
+        await newBlackToken.save();
+        res.status(200).json({ token: newToken });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error!", error: err.message });
+    }
+}
+
+//Update User Details
+module.exports.updateUser = async (req, res, next) => {
+    const token = await BlacklistToken.findOne({ token: req.token });
+    if (token) return res.status(401).json({ message: "Unauthorized!" });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(401).json({ message: errors.array().map((err) => err.msg).join(" ") });
+    }
+    try {
+        const { firstname, lastname, email, about, DOB, phone, address } = req.body;
+        await User.findByIdAndUpdate(req.user._id, {
+            $set: {
+                fullname: {
+                    firstname,
+                    lastname,
+                },
+                email, about, DOB, phone, address
+            }
+        })
+        const newToken = generateJwt(req.user._id);
+        const newBlackToken = new BlacklistToken({
+            token: req.token
+        });
+        await newBlackToken.save();
+        res.status(200).json({ token: newToken });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Couldn't update.", error: err.message });
+    }
 }

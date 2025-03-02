@@ -9,6 +9,7 @@ const userRouter = require("./routes/user.js");
 const { main } = require("./services/db.js");
 
 
+
 const port = process.env.PORT || 3000;
 
 //Useful middlewares =============================================
@@ -24,7 +25,6 @@ app.use(cors({
 app.use("/api/courses", coursesRouter);
 app.use("/api/user", userRouter);
 app.use("/api/message", messageRouter);
-
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {

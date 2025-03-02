@@ -4,6 +4,10 @@ const userController = require("../controllers/user.controller.js");
 const router = express.Router();
 const { body } = require("express-validator");
 const { authMiddleware } = require("../middlewares/authMiddlewares");
+const multer = require('multer');
+const { cloudinary, storage } = require("../services/cloudinaryConfig.js");
+const upload = multer({ storage });
+
 
 router.route("/signup").post([
     body("email").isEmail().withMessage("Enter a valid email address."),
@@ -14,6 +18,10 @@ router.route("/signup").post([
 router.route("/login").post(wrapAsync(userController.login));
 router.route("/logout").post(authMiddleware, wrapAsync(userController.logout));
 
-router.route("/profile").get(authMiddleware, wrapAsync(userController.getUserProfile));
+router.route("/profile").get(authMiddleware, wrapAsync(userController.getUserProfile)).put(authMiddleware, [
+    body("email").isEmail().withMessage("Enter a valid email address."),
+    body("firstname").isLength({ min: 2 }).withMessage("Firstname must contain 2 or more character."),
+], wrapAsync(userController.updateUser));
 
+router.route("/profile/profileImg").put(authMiddleware, upload.single("profileImg"), wrapAsync(userController.uploadProfileImg)).delete(authMiddleware, wrapAsync(userController.destroyProfileImg));
 module.exports = router;

@@ -27,14 +27,16 @@ const userSchema = new Schema({
         ref: "course",
     },
     profileImg: {
-        type: String,
+        url: String,
+        filename: String,
     },
     DOB: {
-        type: Date,
+        type: String,
     },
     address: String,
     country: String,
-    mobile: String,
+    phone: String,
+    about: String,
     isAdmin: {
         type: Boolean,
         default: false,
