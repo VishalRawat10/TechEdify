@@ -12,24 +12,37 @@ import Signup from "./pages/Signup";
 import { MessageProvider } from "./context/MessageContext";
 import { CookiesProvider } from "react-cookie";
 import { UserProvider } from "./context/UserContext";
+import UserProfile from "./pages/UserProfile";
+import AuthWrapper from "./components/AuthWrapper";
+import { CoursesProvider } from "./context/CoursesContext";
 
 export default function App() {
   return (
     <CookiesProvider defaultSetOptions={{ path: "/" }}>
       <ThemeProvider>
         <MessageProvider>
-          <UserProvider>
-            <Header />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/user/login" element={<Login />} />
-              <Route path="/user/signup" element={<Signup />} />
-            </Routes>
-            <Footer />
-          </UserProvider>
+          <CoursesProvider>
+            <UserProvider>
+              <Header />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/user/login" element={<Login />} />
+                <Route path="/user/signup" element={<Signup />} />
+                <Route
+                  path="/user/profile"
+                  element={
+                    <AuthWrapper>
+                      <UserProfile />
+                    </AuthWrapper>
+                  }
+                />
+              </Routes>
+              <Footer />
+            </UserProvider>
+          </CoursesProvider>
         </MessageProvider>
       </ThemeProvider>
     </CookiesProvider>

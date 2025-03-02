@@ -9,7 +9,7 @@ export default function Message() {
   return (
     <div
       className={
-        "w-full absolute top-20 duration-300 transition-[display]" +
+        "w-full fixed top-20 duration-300 transition-[display] z-50" +
         (!message ? " hidden" : "")
       }
     >

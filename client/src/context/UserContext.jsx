@@ -6,11 +6,13 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [cookie, setCookie, removeCookie] = useCookies(["token"]);
   const [user, setUser] = useState();
+  const [enrolledCourses, setEnrolledCourses] = useState();
   const [token, setToken] = useState(() => {
     return cookie.token ? cookie.token : "";
   });
 
   const getUser = async () => {
+    console.log("inside get user");
     try {
       const res = await apiInstance.get("/user/profile", {
         headers: {
@@ -37,7 +39,7 @@ export const UserProvider = ({ children }) => {
   }, [token]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, setToken }}>
+    <UserContext.Provider value={{ user, setUser, setToken, token }}>
       {children}
     </UserContext.Provider>
   );

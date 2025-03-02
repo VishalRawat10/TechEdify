@@ -4,8 +4,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 * {
-  transition: color 0.1s linear, background-color 0.4s linear,
-    translate 0.3s linear;
+  transition: color 0.1s linear, translate 0.3s linear,
+    background-color 0.4s linear;
 }
 
 :root {
@@ -24,7 +24,7 @@
 }
 
 @theme {
-  --animate-successMsg: successMsg 2s linear;
+  --animate-successMsg: successMsg 1s linear;
   @keyframes successMsg {
     0% {
       border-bottom: 2px solid #e4ff1a;
@@ -34,7 +34,7 @@
       width: 0;
     }
   }
-  --animate-errorMsg: errorMsg 2s linear;
+  --animate-errorMsg: errorMsg 1s linear;
   @keyframes errorMsg {
     0% {
       border-bottom: 2px solid #e4ff1a;
@@ -109,4 +109,17 @@
   display: block;
   font-size: 12px;
   margin: 0;
+}
+
+/* Profile page  */
+
+.profile-section {
+  @apply flex  gap-2 md:gap-4 p-4 md:p-8  w-[100vw-2rem] md:w-[70vw] text-[#14213d] dark:text-[#e5e5e5] bg-white dark:bg-[var(--dark-bg-3)] rounded-lg mx-4 md:mx-auto;
+}
+.profile-input {
+  @apply px-4 py-2 border-1 border-[#e5e5e5] focus:outline-none focus:border-[#14213d] dark:border-[#4a4e69] dark:focus:border-[#e5e5e5] rounded-lg text-sm;
+}
+
+.profile-input[type="date"]::-webkit-calendar-picker-indicator {
+  color: red;
 }
