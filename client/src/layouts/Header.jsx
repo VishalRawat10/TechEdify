@@ -7,7 +7,7 @@ import { useContext, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 
-import Message from "./Message";
+import Message from "../components/Message";
 import { apiInstance } from "../../services/apis";
 import { MessageContext } from "../context/MessageContext";
 
@@ -41,7 +41,7 @@ export default function Header() {
   return (
     <>
       <header className="z-50">
-        <nav className="max-w-screen overflow-x-hidden h-16 flex items-center px-4 md:px-8 bg-white justify-between dark:bg-[var(--dark-bg-3)]">
+        <nav className="max-w-screen overflow-x-hidden h-18 flex items-center px-4 md:px-8 bg-white justify-between dark:bg-[var(--dark-bg-3)]">
           {/* Logo */}
           <Link to="/" title="coding-shala">
             <img

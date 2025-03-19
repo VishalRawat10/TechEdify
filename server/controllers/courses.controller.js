@@ -7,9 +7,9 @@ module.exports.courses = async (req, res, next) => {
         if (courses)
             return res.status(200).json(courses);
         else
-            res.status(501).json({ message: "Internal server error!" });
+            res.status(500).json({ message: "Internal server error!" });
     } catch (err) {
-        res.status(501).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 
 }
@@ -31,12 +31,13 @@ module.exports.getCourse = async (req, res, next) => {
 module.exports.buy = async (req, res, next) => {
     const { id } = req.params;
     const course = await Course.findById(id);
+    const user = await User.findById(req.user._id);
     if (!course) {
         return res.status(401).json({ message: "Course does not exist!" });
     }
     try {
-        req.user.coursesEnrolled.push(course);
-        await req.user.save();
+        user.coursesEnrolled.push(course);
+        await user.save();
         res.status(200).json({ message: "Course purchased successfully!" });
     } catch (err) {
         console.log(err);

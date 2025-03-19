@@ -24,7 +24,7 @@
 }
 
 @theme {
-  --animate-successMsg: successMsg 1s linear;
+  --animate-successMsg: successMsg 1.75s linear;
   @keyframes successMsg {
     0% {
       border-bottom: 2px solid #e4ff1a;
@@ -34,7 +34,7 @@
       width: 0;
     }
   }
-  --animate-errorMsg: errorMsg 1s linear;
+  --animate-errorMsg: errorMsg 1.75s linear;
   @keyframes errorMsg {
     0% {
       border-bottom: 2px solid #e4ff1a;

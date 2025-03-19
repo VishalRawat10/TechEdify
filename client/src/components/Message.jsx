@@ -15,10 +15,10 @@ export default function Message() {
     >
       <div
         className={
-          "text-white mx-2 rounded-lg flex gap-4  py-2 md:w-1/2 md:mx-auto after:content-[''] after:block after:w-full after:md:w-1/2 after:h-full after:absolute after:bottom-0 after:rounded-lg dark:text-black" +
+          "text-white mx-2 rounded-lg flex gap-4  py-3 md:w-1/2 md:mx-auto after:content-[''] after:block after:w-full after:md:w-1/2 after:h-full after:absolute after:bottom-0 after:rounded-lg dark:text-black" +
           (isError
-            ? " bg-[#bb2124] after:animate-errorMsg "
-            : " bg-[#04e762] after:animate-successMsg")
+            ? " bg-[#F93827] after:animate-errorMsg "
+            : " bg-[#16C47F] after:animate-successMsg")
         }
       >
         {" "}

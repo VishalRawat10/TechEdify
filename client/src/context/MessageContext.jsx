@@ -10,7 +10,7 @@ export const MessageProvider = ({ children }) => {
   useEffect(() => {
     setTimeout(() => {
       setMessage("");
-    }, 1000);
+    }, 1750);
   }, [message]);
   return (
     <MessageContext.Provider

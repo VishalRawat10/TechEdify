@@ -6,7 +6,6 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [cookie, setCookie, removeCookie] = useCookies(["token"]);
   const [user, setUser] = useState();
-  const [enrolledCourses, setEnrolledCourses] = useState();
   const [token, setToken] = useState(() => {
     return cookie.token ? cookie.token : "";
   });

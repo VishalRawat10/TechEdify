@@ -132,9 +132,10 @@ export default function UserProfile() {
     });
   };
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <>
-      {isLoading ? <Loader /> : ""}
       {/* Profile Photo Section  */}
       <section className="profile-section items-center h-[6rem] mt-4">
         {/* Profile Photo  */}
@@ -155,7 +156,7 @@ export default function UserProfile() {
           )}
         </div>
         <div className="flex flex-col">
-          <h3 className="font-semibold text-lg">
+          <h3 className="font-semibold text-2xl">
             {user.fullname.firstname + " " + user.fullname.lastname}
           </h3>
           <p className="text-sm">{user.email}</p>
@@ -164,8 +165,10 @@ export default function UserProfile() {
         {user.profileImg?.url ? (
           ""
         ) : (
-          <div className="ml-auto">
-            <label htmlFor="profileImg">Upload Photo</label>
+          <div className="ml-auto ">
+            <label htmlFor="profileImg" className="cursor-pointer">
+              Upload Photo
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -182,11 +185,11 @@ export default function UserProfile() {
             (showPhoto ? " scale-100" : " scale-0")
           }
         >
-          <div className={`relative rounded-lg bg-cover`}>
+          <div className={`relative`}>
             <img
               src={user.profileImg?.url}
               alt={user.profileImg?.filename}
-              className="h-[17rem]  object-contain rounded-lg"
+              className="h-[25rem]  aspect-auto "
               loading="lazy"
             />
             <button
@@ -345,11 +348,20 @@ export default function UserProfile() {
       <section className="profile-section flex-col mb-4">
         <h2 className="text-2xl font-semibold">Other Details</h2>
         <h3 className="text-lg">My courses: </h3>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="border-2">
-            <img className="h-[5rem]" src="/images/hero-img.png" alt="" />
-            <h3>Web Development</h3>
-          </div>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 max-h-[30rem] overflow-y-auto ">
+          {user.coursesEnrolled.map((courseId) => {
+            const course = courses.find((course) => course._id === courseId);
+            return (
+              <button className="cursor-pointer text-left">
+                <img
+                  className="aspect-video w-full rounded-lg"
+                  src={course.profileImg}
+                  alt=""
+                />
+                <p className="opacity-70">{course.name}</p>
+              </button>
+            );
+          })}
         </div>
       </section>
     </>

@@ -3,8 +3,9 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Courses from "./pages/Courses";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import ShowCourse from "./pages/ShowCourse";
+import Header from "./layouts/Header";
+import Footer from "./layouts/Footer";
 import "./App.css";
 import { ThemeProvider } from "./context/ThemeContext";
 import Login from "./pages/Login";
@@ -27,6 +28,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/courses" element={<Courses />} />
+                <Route path="/courses/:id" element={<ShowCourse />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/user/login" element={<Login />} />

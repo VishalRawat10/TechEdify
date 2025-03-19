@@ -32,7 +32,7 @@ module.exports.signup = async (req, res, next) => {
             message: "Welcome to codingShala!", token
         });
     } catch (err) {
-        res.status(501).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 }
 

@@ -41,7 +41,6 @@ export default function Login() {
       navigate(-1);
     } catch (err) {
       setIsLoading(false);
-      console.log(err.response.data.message);
       setMessage(err.response.data.message);
       setIsError(true);
     }

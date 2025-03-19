@@ -16,8 +16,13 @@ export const CoursesProvider = ({ children }) => {
     getCourses();
   }, []);
 
+  const findCourseById = (id) => {
+    const course = courses.find((course) => course._id === id);
+    return course;
+  };
+
   return (
-    <CoursesContext.Provider value={{ courses }}>
+    <CoursesContext.Provider value={{ courses, findCourseById }}>
       {children}
     </CoursesContext.Provider>
   );
