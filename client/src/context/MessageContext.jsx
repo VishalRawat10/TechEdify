@@ -3,13 +3,14 @@ import { createContext, useState, useEffect } from "react";
 export const MessageContext = createContext();
 
 export const MessageProvider = ({ children }) => {
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState({
+    text: "",
+    isError: false,
+  });
 
   useEffect(() => {
     setTimeout(() => {
-      setMessage("");
+      setMessage({ message: "", isError: false });
     }, 1750);
   }, [message]);
   return (
@@ -17,10 +18,6 @@ export const MessageProvider = ({ children }) => {
       value={{
         message,
         setMessage,
-        isError,
-        setIsError,
-        isLoading,
-        setIsLoading,
       }}
     >
       {children}

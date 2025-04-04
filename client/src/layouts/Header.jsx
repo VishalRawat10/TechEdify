@@ -1,41 +1,31 @@
+import { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { useContext, useState } from "react";
+import PersonIcon from "@mui/icons-material/Person";
+
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
+import { MessageContext } from "../context/MessageContext";
 
 import Message from "../components/Message";
 import { apiInstance } from "../../services/apis";
-import { MessageContext } from "../context/MessageContext";
-
-import PersonIcon from "@mui/icons-material/Person";
 
 export default function Header() {
   const [sideMenu, setSideMenu] = useState(false); //Side menu draw
   const { theme, changeTheme } = useContext(ThemeContext);
-  const { user, token, setToken } = useContext(UserContext);
-  const { setMessage, setIsError } = useContext(MessageContext);
+  const { user, setUser } = useContext(UserContext);
+  const { setMessage } = useContext(MessageContext);
   const navigate = useNavigate();
 
   //logout function
   const logout = async () => {
     try {
-      const res = apiInstance.post(
-        "/auth/logout",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = apiInstance.post("/auth/logout");
     } catch {}
-    setToken("");
-    setIsError(false);
-    setMessage("Logged out successfully!");
+    setMessage({ text: "Logged out successfully!", isError: false });
   };
 
   return (

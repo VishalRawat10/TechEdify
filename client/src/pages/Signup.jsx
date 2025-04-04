@@ -38,20 +38,20 @@ export default function Signup() {
       try {
         setIsLoading(true);
         const res = await apiInstance.post("/user/signup", userDetails);
+        setUser(res.data.user);
         setIsLoading(false);
-        setCookie("token", res.data.token);
-        setMessage("Welcome to CodingShala");
-        setIsError(false);
+        setMessage({ text: "Welcome to CodingShala", isError: false });
         navigate(-1);
       } catch (err) {
         setIsLoading(false);
-        setMessage(err.response.data.message);
-        setIsError(true);
+        setMessage({ text: err.response.data.message, isError: true });
         confirmPassword.current.value = "";
       }
     } else {
-      setMessage("Confirm password does not match the password!");
-      setIsError(true);
+      setMessage({
+        text: "Confirm password does not match the password!",
+        isError: true,
+      });
       confirmPassword.current.value = "";
     }
   };

@@ -8,7 +8,7 @@ import { UserContext } from "../context/UserContext";
 import Loader from "../components/Loader";
 
 export default function Login() {
-  const { setMessage, setIsError } = useContext(MessageContext);
+  const { setMessage } = useContext(MessageContext);
   const { setUser } = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,15 +34,13 @@ export default function Login() {
       if (isLoading) return;
       setIsLoading(true);
       const res = await apiInstance.post("/user/login", userCredentials);
+      setUser(res.data.user);
       setIsLoading(false);
-      setToken(res.data.token);
-      setMessage("Welcome back to CodingShala!");
-      setIsError(false);
+      setMessage({ text: "Welcome back to CodingShala!", isError: false });
       navigate(-1);
     } catch (err) {
       setIsLoading(false);
-      setMessage(err.response.data.message);
-      setIsError(true);
+      setMessage({ text: err.response.data.message, isError: true });
     }
   };
 
