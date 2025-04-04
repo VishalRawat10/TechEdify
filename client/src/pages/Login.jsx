@@ -9,7 +9,7 @@ import Loader from "../components/Loader";
 
 export default function Login() {
   const { setMessage, setIsError } = useContext(MessageContext);
-  const { setToken } = useContext(UserContext);
+  const { setUser } = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userCredentials, setUserCredentials] = useState({

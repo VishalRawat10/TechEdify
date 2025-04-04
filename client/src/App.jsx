@@ -1,52 +1,47 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Courses from "./pages/Courses";
-import ShowCourse from "./pages/ShowCourse";
+import "./App.css";
+
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Courses = lazy(() => import("./pages/Courses"));
+const ShowCourse = lazy(() => import("./pages/ShowCourse"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+
+import Loader from "./components/Loader";
 import Header from "./layouts/Header";
 import Footer from "./layouts/Footer";
-import "./App.css";
-import { ThemeProvider } from "./context/ThemeContext";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import { MessageProvider } from "./context/MessageContext";
-import { CookiesProvider } from "react-cookie";
-import { UserProvider } from "./context/UserContext";
-import UserProfile from "./pages/UserProfile";
+
 import AuthWrapper from "./components/AuthWrapper";
-import { CoursesProvider } from "./context/CoursesContext";
+import AllContextProvider from "./context/AllContextProvider";
 
 export default function App() {
   return (
-    <CookiesProvider defaultSetOptions={{ path: "/" }}>
-      <ThemeProvider>
-        <MessageProvider>
-          <CoursesProvider>
-            <UserProvider>
-              <Header />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/courses" element={<Courses />} />
-                <Route path="/courses/:id" element={<ShowCourse />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/user/login" element={<Login />} />
-                <Route path="/user/signup" element={<Signup />} />
-                <Route
-                  path="/user/profile"
-                  element={
-                    <AuthWrapper>
-                      <UserProfile />
-                    </AuthWrapper>
-                  }
-                />
-              </Routes>
-              <Footer />
-            </UserProvider>
-          </CoursesProvider>
-        </MessageProvider>
-      </ThemeProvider>
-    </CookiesProvider>
+    <AllContextProvider>
+      <Header />
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:id" element={<ShowCourse />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/user/login" element={<Login />} />
+          <Route path="/user/signup" element={<Signup />} />
+          <Route
+            path="/user/profile"
+            element={
+              <AuthWrapper>
+                <UserProfile />
+              </AuthWrapper>
+            }
+          />
+        </Routes>
+      </Suspense>
+      <Footer />
+    </AllContextProvider>
   );
 }

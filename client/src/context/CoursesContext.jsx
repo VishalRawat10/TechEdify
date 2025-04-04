@@ -17,7 +17,10 @@ export const CoursesProvider = ({ children }) => {
   }, []);
 
   const findCourseById = (id) => {
-    const course = courses.find((course) => course._id === id);
+    const course = courses?.find((course) => course._id === id);
+    if (!course) {
+      return null;
+    }
     return course;
   };
 
