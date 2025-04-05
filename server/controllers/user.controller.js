@@ -1,7 +1,6 @@
 const User = require("../models/user.js");
 const BlacklistToken = require("../models/blacklistToken.js");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const { cloudinary } = require("../services/cloudinaryConfig.js");
 const { generateJwt } = require("../utils/jwtUtils.js");
@@ -28,8 +27,13 @@ module.exports.signup = async (req, res, next) => {
         });
         await newUser.save();
         const token = generateJwt(newUser._id);
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
+        });
         return res.status(200).json({
-            message: "Welcome to codingShala!", token
+            message: "Welcome to codingShala!", success: true, user: { ...newUser, password: "" }
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -50,11 +54,18 @@ module.exports.login = async (req, res, next) => {
             const isMatch = await bcrypt.compare(password, user.password);
             if (isMatch) {
                 const token = generateJwt(user._id);
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    sameSite: 'Strict',
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
+                });
                 return res.status(200).json({
-                    token
+                    message: "User logged in successfully.", success: true,
+                    user: { ...user, password: "" }
                 });
             }
         }
+
         res.status(401).json({ message: "Invalid email or password!" });
     } catch (err) {
         res.status(401).json({ message: err.message });
@@ -67,6 +78,7 @@ module.exports.logout = async (req, res, next) => {
         await BlacklistToken.create({
             token: req.token
         });
+        res.clearCookie("token");
         return res.status(200).json({ message: "Logged Out successfully!" });
     } catch (err) {
         return res.status(401).json({ message: err.message });
@@ -85,15 +97,10 @@ module.exports.getUserProfile = async (req, res, next) => {
 //Profile Image Upload
 module.exports.uploadProfileImg = async (req, res, next) => {
     const token = await BlacklistToken.findOne({ token: req.token });
-    if (token) return res.status(401).json({ message: "Unauthorized!" });
+    if (token) return res.status(401).json({ message: "Unauthorized!", success: false });
     try {
-        await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: req.file.path, filename: req.file.filename } } });
-        const newToken = generateJwt(req.user._id);
-        const newBlackToken = new BlacklistToken({
-            token: req.token
-        });
-        await newBlackToken.save();
-        res.status(200).json({ token: newToken });
+        const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: req.file.path, filename: req.file.filename } } });
+        res.status(200).json({ user, message: "Profile image updated successfully.", success: true });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Internal server error!", error: err.message });
@@ -106,17 +113,12 @@ module.exports.destroyProfileImg = async (req, res, next) => {
     if (token) return res.status(401).json({ message: "Unauthorized!" });
     try {
         const result = await cloudinary.uploader.destroy(req.user.profileImg.filename);
-        if (result.result === "not found") return res.status(400).json({ message: "Image not found!" });
-        await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: "", filename: "" } } });
-        const newToken = generateJwt(req.user._id);
-        const newBlackToken = new BlacklistToken({
-            token: req.token
-        });
-        await newBlackToken.save();
-        res.status(200).json({ token: newToken });
+        if (result.result === "not found") return res.status(400).json({ message: "Image not found!", success: false });
+        const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: "", filename: "" } } });
+        res.status(200).json({ user, message: "Profile image deleted successfully", success: true });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: "Internal server error!", error: err.message });
+        res.status(500).json({ message: "Internal server error!", error: err.message, success: false });
     }
 }
 
