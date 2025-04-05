@@ -2,9 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const cookieParser = require("cookie-parser");
+
 const coursesRouter = require("./routes/courses.js");
 const messageRouter = require("./routes/message.js");
 const userRouter = require("./routes/user.js");
+const reviewRouter = require("./routes/review.js");
 
 
 //Useful middlewares =============================================
@@ -20,6 +22,7 @@ app.use(cors({
 app.use("/api/courses", coursesRouter);
 app.use("/api/user", userRouter);
 app.use("/api/message", messageRouter);
+app.use("/api/courses/", reviewRouter);
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {
