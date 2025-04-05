@@ -1,6 +1,6 @@
 require("dotenv").config();
 const app = require("./app.js");
-const { main } = require("./services/db.js");
+const { connectToDB } = require("./services/db.js");
 const http = require("http");
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
@@ -9,12 +9,7 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => {
     console.log(`app is listening to port ${port}...`);
     //Connecting to mongoose
-    main().then((res) => {
-        console.log("Mongoose is connected successfully...");
-    })
-        .catch((err) => {
-            console.log(err);
-        });
+    connectToDB();
 });
 
 
