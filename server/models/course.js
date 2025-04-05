@@ -52,6 +52,14 @@ const courseSchema = new Schema({
     price: {
         type: String,
         required: true,
+    },
+    desciption: {
+        type: String,
+        // required: true,
+    },
+    reviews: {
+        type: [Schema.Types.ObjectId],
+        ref: "Review"
     }
 }, { timestamps: true });
 
