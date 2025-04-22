@@ -3,8 +3,9 @@ import { CoursesContext } from "../context/CoursesContext";
 import Loader from "../components/Loader";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
+
 import { UserContext } from "../context/UserContext";
-import CourseCard from "../components/CourseCard";
+import CourseCard from "../components/UI/CourseCard";
 
 export default function Courses() {
   const { courses } = useContext(CoursesContext);
@@ -62,12 +63,13 @@ export default function Courses() {
             <option
               value="enrolled"
               className="text-black"
-              onSelectdw={() => setShowEnrolled(!showEnrolled)}
+              onSelect={() => setShowEnrolled(!showEnrolled)}
               selected={showEnrolled}
             >
               Enrolled Courses
             </option>
           </select>
+
           <div className="max-w-[24rem] w-full md:w-[24rem] border-1 border-white px-4 py-2 rounded-full flex items-center gap-2 justify-between text-sm">
             <label htmlFor="search" className="cursor-pointer">
               <SearchIcon />
