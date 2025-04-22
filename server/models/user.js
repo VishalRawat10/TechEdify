@@ -37,15 +37,19 @@ const userSchema = new Schema({
     country: String,
     phone: String,
     about: String,
-    isAdmin: {
-        type: Boolean,
-        default: false,
+    role: {
+        enum: ["student", "instructor", "admin"],
+        type: String,
+        default: "student",
     },
-    isVarified: {
-        type: Boolean,
-        default: false
-    },
-    verificationOTP: String,
+    instructorId: {
+        type: Schema.Types.ObjectId,
+        ref: "Instructor",
+        required: function () {
+            return this.role === "instructor";
+        }
+
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

@@ -34,7 +34,6 @@ export default function Login() {
       if (isLoading) return;
       setIsLoading(true);
       const res = await apiInstance.post("/user/login", userCredentials);
-      console.log(res.data);
       setUser(res.data.user);
       setIsLoading(false);
       setMessageInfo("Welcome back to TechEdify!", false);

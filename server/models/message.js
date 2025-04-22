@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const messageSchema = new Schema({
-    name: {
+    fullname: {
         type: String,
         required: true,
     },

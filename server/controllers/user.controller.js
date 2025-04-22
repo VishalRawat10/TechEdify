@@ -32,8 +32,9 @@ module.exports.signup = async (req, res, next) => {
             sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
         });
+        newUser.password = null;
         return res.status(200).json({
-            message: "Welcome to codingShala!", success: true, user: { ...newUser, password: "" }
+            message: "Welcome to codingShala!", success: true, user: newUser
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -59,9 +60,10 @@ module.exports.login = async (req, res, next) => {
                     sameSite: 'Strict',
                     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
                 });
+                user.password = null;
                 return res.status(200).json({
                     message: "User logged in successfully.", success: true,
-                    user: { ...user, password: "" }
+                    user
                 });
             }
         }
@@ -100,6 +102,8 @@ module.exports.uploadProfileImg = async (req, res, next) => {
     if (token) return res.status(401).json({ message: "Unauthorized!", success: false });
     try {
         const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: req.file.path, filename: req.file.filename } } });
+        user.profileImg.url = req.file.path;
+        user.profileImg.filename = req.file.filename;
         res.status(200).json({ user, message: "Profile image updated successfully.", success: true });
     } catch (err) {
         console.log(err);
@@ -115,6 +119,8 @@ module.exports.destroyProfileImg = async (req, res, next) => {
         const result = await cloudinary.uploader.destroy(req.user.profileImg.filename);
         if (result.result === "not found") return res.status(400).json({ message: "Image not found!", success: false });
         const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImg: { url: "", filename: "" } } });
+        user.profileImg.url = "";
+        user.profileImg.filename = "";
         res.status(200).json({ user, message: "Profile image deleted successfully", success: true });
     } catch (err) {
         console.log(err);
@@ -132,7 +138,7 @@ module.exports.updateUser = async (req, res, next) => {
     }
     try {
         const { firstname, lastname, email, about, DOB, phone, address } = req.body;
-        await User.findByIdAndUpdate(req.user._id, {
+        const user = await User.findByIdAndUpdate(req.user._id, {
             $set: {
                 fullname: {
                     firstname,
@@ -140,13 +146,15 @@ module.exports.updateUser = async (req, res, next) => {
                 },
                 email, about, DOB, phone, address
             }
-        })
-        const newToken = generateJwt(req.user._id);
-        const newBlackToken = new BlacklistToken({
-            token: req.token
         });
-        await newBlackToken.save();
-        res.status(200).json({ token: newToken });
+        user.fullname.firstname = firstname;
+        user.fullname.lastname = lastname;
+        user.email = email;
+        user.about = about;
+        user.DOB = DOB;
+        user.phone = phone;
+        user.address = address;
+        res.status(200).json({ user, message: "Profile updated successfully." });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Couldn't update.", error: err.message });
