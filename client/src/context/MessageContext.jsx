@@ -3,21 +3,24 @@ import { createContext, useState, useEffect } from "react";
 export const MessageContext = createContext();
 
 export const MessageProvider = ({ children }) => {
-  const [message, setMessage] = useState({
-    text: "",
-    isError: false,
-  });
+  const [message, setMessage] = useState();
+  const [isError, setIsError] = useState();
 
+  const setMessageInfo = (message, isError = true) => {
+    setMessage(message);
+    setIsError(isError);
+  };
   useEffect(() => {
     setTimeout(() => {
-      setMessage({ message: "", isError: false });
+      setMessageInfo("", false);
     }, 1750);
   }, [message]);
   return (
     <MessageContext.Provider
       value={{
         message,
-        setMessage,
+        isError,
+        setMessageInfo,
       }}
     >
       {children}
