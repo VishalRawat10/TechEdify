@@ -5,10 +5,10 @@ module.exports.send = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ message: errors.array() });
-    } const { name, email, message } = req.body;
+    } const { fullname, email, message } = req.body;
     try {
         const newMessage = new Message({
-            name,
+            fullname,
             email,
             message
         });
