@@ -7,7 +7,7 @@ export const CoursesProvider = ({ children }) => {
   async function getCourses() {
     try {
       const res = await apiInstance.get("/courses");
-      setCourses(res.data);
+      setCourses(res.data.courses);
     } catch (err) {
       console.error(err);
     }
