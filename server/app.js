@@ -7,6 +7,7 @@ const coursesRouter = require("./routes/courses.js");
 const messageRouter = require("./routes/message.js");
 const userRouter = require("./routes/user.js");
 const reviewRouter = require("./routes/review.js");
+const lectureRouter = require("./routes/lecture.js");
 
 
 //Useful middlewares =============================================
@@ -23,6 +24,7 @@ app.use("/api/courses", coursesRouter);
 app.use("/api/user", userRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/courses/", reviewRouter);
+app.use("/api/courses/", lectureRouter);
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {
