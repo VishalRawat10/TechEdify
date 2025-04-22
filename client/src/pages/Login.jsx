@@ -8,7 +8,7 @@ import { UserContext } from "../context/UserContext";
 import Loader from "../components/Loader";
 
 export default function Login() {
-  const { setMessage } = useContext(MessageContext);
+  const { setMessageInfo } = useContext(MessageContext);
   const { setUser } = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,13 +34,15 @@ export default function Login() {
       if (isLoading) return;
       setIsLoading(true);
       const res = await apiInstance.post("/user/login", userCredentials);
+      console.log(res.data);
       setUser(res.data.user);
       setIsLoading(false);
-      setMessage({ text: "Welcome back to CodingShala!", isError: false });
-      navigate(-1);
+      setMessageInfo("Welcome back to TechEdify!", false);
+      navigate("/user/dashboard");
     } catch (err) {
       setIsLoading(false);
-      setMessage({ text: err.response.data.message, isError: true });
+      console.log(err);
+      setMessageInfo(err.response.data.message, true);
     }
   };
 
