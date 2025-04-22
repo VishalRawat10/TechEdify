@@ -5,6 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import PersonIcon from "@mui/icons-material/Person";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
@@ -17,15 +18,17 @@ export default function Header() {
   const [sideMenu, setSideMenu] = useState(false); //Side menu draw
   const { theme, changeTheme } = useContext(ThemeContext);
   const { user, setUser } = useContext(UserContext);
-  const { setMessage } = useContext(MessageContext);
+  const { setMessageInfo } = useContext(MessageContext);
   const navigate = useNavigate();
 
   //logout function
   const logout = async () => {
     try {
-      const res = apiInstance.post("/auth/logout");
+      const res = apiInstance.post("/user/logout");
     } catch {}
-    setMessage({ text: "Logged out successfully!", isError: false });
+    setMessageInfo("Logged out successfully!", false);
+    setUser(null);
+    navigate("/");
   };
 
   return (
@@ -33,16 +36,16 @@ export default function Header() {
       <header className="z-50">
         <nav className="max-w-screen overflow-x-hidden h-18 flex items-center px-4 md:px-8 bg-white justify-between dark:bg-[var(--dark-bg-3)]">
           {/* Logo */}
-          <Link to="/" title="coding-shala">
+          <Link to="/" title="TechEdify">
             <img
               src="/images/logo.png"
               alt="logo"
-              className="h-8 hidden md:block"
+              className="h-12 hidden md:block"
             />
             <img
               src="/images/smallerlogo.png"
               alt="logo"
-              className="h-8 md:hidden"
+              className="h-12 md:hidden"
             />
           </Link>
           {/* Menu Button  */}
@@ -70,13 +73,23 @@ export default function Header() {
             <div
               onClick={changeTheme}
               className="dark:text-white cursor-pointer"
+              title="theme"
             >
               {theme === "light" ? <DarkModeIcon /> : <LightModeIcon />}
             </div>
             {/* Navigation Links  */}
-            <NavLink to="/" className={"nav-link "}>
-              Home
-            </NavLink>
+            {user?.email ? (
+              <Link className=" relative" title="notifications">
+                <span className=" absolute  right-0.5 h-3 w-3 flex justify-center items-center dark:bg-black bg-white rounded-full px-0.2 py-0.2">
+                  <span className="bg-black dark:bg-white w-2 h-2 rounded-full"></span>
+                </span>
+                <NotificationsIcon sx={{ fontSize: "1.6rem" }} />
+              </Link>
+            ) : (
+              <NavLink to="/" className={"nav-link "}>
+                Home
+              </NavLink>
+            )}
             <NavLink to="/courses" className={"nav-link"}>
               Courses
             </NavLink>
@@ -109,12 +122,12 @@ export default function Header() {
                 </>
               )}
             </div>
-            {/* Profile Button  */}
+            {/* Dashboard Button  */}
             {user && (
               <Link
                 className="flex flex-row items-center justify-center gap-2 cursor-pointer hover:opacity-75 hover:underline"
-                title="Profile"
-                to="/user/profile"
+                title="dashboard"
+                to="/user/dashboard"
               >
                 {user.profileImg?.url ? (
                   <img
@@ -128,7 +141,6 @@ export default function Header() {
                     <PersonIcon />
                   </span>
                 )}
-                {/* <span className="font-semibold">{user.fullname.firstname}</span> */}
               </Link>
             )}
           </div>
