@@ -1,29 +1,90 @@
-import { useContext } from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { CoursesContext } from "../context/CoursesContext";
+import { useState, useEffect, useContext } from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
+
+import EnrollButton from "../components/UI/EnrollButton";
+import Loader from "../components/Loader";
+import ReviewCard from "../components/UI/ReviewCard";
+import { apiInstance } from "../../services/apis";
+import { UserContext } from "../context/UserContext";
+import StartLearningBtn from "../components/UI/StartLearningBtn";
 
 export default function ShowCourse() {
   const { id } = useParams();
-  const { findCourseById } = useContext(CoursesContext);
-  const course = findCourseById(id);
-  if (!course) {
-    <Navigate to={"/courses"} />;
-  }
-  return (
+  const [isLoading, setIsLoading] = useState();
+  const [course, setCourse] = useState();
+  const { user } = useContext(UserContext);
+  const isEnrolled = user?.coursesEnrolled.includes(id);
+
+  useEffect(() => {
+    const getCourse = async () => {
+      setIsLoading(true);
+      try {
+        const res = await apiInstance.get(`/courses/${id}`);
+        setIsLoading(false);
+        setCourse(res.data.course);
+        console.log(res.data.course);
+      } catch (err) {
+        console.log(err);
+        <Navigate to={"/courses"} />;
+      }
+    };
+    getCourse();
+  }, []);
+
+  return isLoading ? (
+    <Loader />
+  ) : (
     <>
       <main
-        className="p-2 xl:px-24 py-12"
+        className="px-4 xl:px-24 pt-12 md:pt-16 "
         style={{ fontFamily: "Ubuntu, Poppins, sans-serif" }}
       >
-        <div className="mb-12">
-          <h1 className="text-4xl font-semibold text-center">{course?.name}</h1>
+        <div className="">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-center">
+            {course?.name}
+          </h1>
         </div>
-        <section className="flex gap-8 w-full ">
-          <div className="border-[#188acc] rounded-xl border-1 p-12 w-[60%] bg-white dark:bg-[var(--dark-bg-2)]">
-            <h4 className="text-2xl font-semibold mb-4">Course Details</h4>
-            <p>{course?.about}</p>
+        {/* Course Info */}
+        <section className="w-full my-24 md:px-24">
+          {/* Instructor info  */}
+          <div className="flex flex-col-reverse md:flex-row justify-between items-center gap-4">
+            <p className="md:w-[50%] italic ">
+              <span>{'"' + course?.instructor.messageToStudents + '"'}</span>
+              <strong className="block mt-8 text-right">
+                -
+                <Link className="hover:underline">
+                  {course?.instructor.name}
+                </Link>
+              </strong>
+            </p>
+            {/* instructor image  */}
+            {course?.instructor.profileImg ? (
+              <img
+                src={course?.instructor.profileImg}
+                className="w-[14rem] md:w-[17rem] rounded-full aspect-square object-cover"
+                loading="lazy"
+              />
+            ) : (
+              ""
+            )}
           </div>
-          <div className="border-[#188acc] rounded-xl border-1 w-[40%] bg-white shadow-[3px_3px_1px_1px_var(--base-dim)] p-12 dark:bg-[var(--dark-bg-2)]">
+        </section>
+        <section className="flex flex-col md:flex-row gap-8 w-full ">
+          {/* About course  */}
+          <div className="border-[#188acc] rounded-xl border-1 p-8 md:p-12 w-full md:w-[60%] bg-white dark:bg-[var(--dark-bg-2)]">
+            <h4 className="text-2xl font-semibold mb-4">About course</h4>
+            <p>{course?.about}</p>
+            <span className="flex justify-between items-center mt-4 flex-wrap gap-4">
+              <p className="opacity-60 italic text-xl">@{course?.price} only</p>
+              {isEnrolled ? (
+                <StartLearningBtn courseId={id} />
+              ) : (
+                <EnrollButton courseId={id} setIsLoading={setIsLoading} />
+              )}
+            </span>
+          </div>
+          {/* Course Content  */}
+          <div className="border-[#188acc] rounded-xl border-1 md:w-[40%] bg-white shadow-[3px_3px_1px_1px_var(--base-dim)] p-8 md:p-12 dark:bg-[var(--dark-bg-2)]">
             <h4 className="text-xl font-semibold mb-4">Chapters : </h4>
             <ol>
               {course?.content.map((chapter, idx) => (
@@ -34,6 +95,51 @@ export default function ShowCourse() {
             </ol>
           </div>
         </section>
+        {/* Detailed course content  */}
+        <div className="flex items-center flex-col mt-8 ">
+          <div className="bg-white dark:bg-[var(--dark-bg-2)] rounded-xl p-8 md:p-12 w-full ">
+            <p className="text-xl md:text-3xl font-semibold ">
+              Detailed course content :
+            </p>
+            {course?.content.map((chapter, idx) => {
+              return (
+                <div key={idx} className="my-4">
+                  <p className="font-semibold">{"->   " + chapter}</p>
+                  <p className="opacity-80 pl-6">
+                    {course.detailedContent[idx]}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {isEnrolled ? (
+          ""
+        ) : (
+          <div className="flex items-center my-6 md:my-24 w-full justify-between md:px-24 flex-wrap gap-4">
+            <p className=" text-[#188acc] text-xl md:text-2xl">
+              Enroll now <i>@{course?.price}</i> to start learning right now{" "}
+            </p>
+            <EnrollButton courseId={id} setIsLoading={setIsLoading} />
+          </div>
+        )}
+        {/* Reviews on course  */}
+        {course?.reviews.length ? (
+          <div className="w-full mb-12 md:mb-16 mt-4">
+            <p className="text-xl font-semibold">Reviews: </p>
+            <ul className="show-course-reviews-container max-w-full overflow-x-auto flex gap-4 pb-4">
+              {course?.reviews.map((review, idx) => {
+                return (
+                  <li key={idx}>
+                    <ReviewCard review={review} />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : (
+          ""
+        )}
       </main>
     </>
   );
