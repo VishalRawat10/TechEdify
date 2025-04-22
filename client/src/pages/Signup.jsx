@@ -7,7 +7,7 @@ import { MessageContext } from "../context/MessageContext";
 import Loader from "../components/Loader";
 
 export default function Signup() {
-  const { setMessage, setIsError } = useContext(MessageContext);
+  const { setMessageInfo } = useContext(MessageContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userDetails, setUserDetails] = useState({
@@ -40,18 +40,15 @@ export default function Signup() {
         const res = await apiInstance.post("/user/signup", userDetails);
         setUser(res.data.user);
         setIsLoading(false);
-        setMessage({ text: "Welcome to CodingShala", isError: false });
-        navigate(-1);
+        setMessageInfo("Welcome to TechEdify", false);
+        navigate("/user/dashboard");
       } catch (err) {
         setIsLoading(false);
-        setMessage({ text: err.response.data.message, isError: true });
+        setMessageInfo(err.response.data.message, true);
         confirmPassword.current.value = "";
       }
     } else {
-      setMessage({
-        text: "Confirm password does not match the password!",
-        isError: true,
-      });
+      setMessageInfo("Confirm password does not match the password!", true);
       confirmPassword.current.value = "";
     }
   };
@@ -70,7 +67,7 @@ export default function Signup() {
             className=" font-['Poppins'_sans-serif] h-full p-4 md:px-16 w-full max-w-[27rem] md:min-w-[27rem] flex flex-col gap-5 md:justify-center"
             onSubmit={(e) => createAccount(e)}
           >
-            <h2 className="text-4xl">Create an account</h2>
+            <h2 className="text-3xl">Create an account</h2>
             <p className="text-[14px] text-[#A8A8A8]">
               Already have an account? &nbsp;
               <Link
