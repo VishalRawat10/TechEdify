@@ -8,18 +8,14 @@ export default function UserProfile({ user }) {
     <>
       {/* Profile Image */}
       <div className="h-fit flex items-center justify-center gap-8 w-full md:w-fit">
-        {user?.profileImg?.url ? (
+        {
           <img
-            src={user.profileImg.url}
+            src={user?.profileImg?.url || "/svg/Person.svg"}
             alt="Profile"
             loading="lazy"
-            className="rounded-full object-cover w-52 aspect-square"
+            className="rounded-full object-cover w-48 aspect-square border-2 border-[var(--base)]"
           />
-        ) : (
-          <div className="w-24 sm:w-28 md:w-32 lg:w-40 xl:w-52 aspect-square rounded-full bg-white flex justify-center items-center">
-            <PersonIcon className="scale-[2] text-black" />
-          </div>
-        )}
+        }
       </div>
       <div className="text-sm w-full ">
         <p className="text-3xl font-semibold mb-4">

@@ -1,4 +1,3 @@
-import BecomeInstructorBtn from "./BecomeInstructorBtn";
 import DbSideItem from "../DbSideItem";
 
 export default function DashboardSidebar() {
@@ -30,7 +29,6 @@ export default function DashboardSidebar() {
       {sideBarItems.map((item, idx) => (
         <DbSideItem img={item.img} title={item.title} to={item.to} key={idx} />
       ))}
-      <BecomeInstructorBtn className="hidden lg:block" />
     </div>
   );
 }
