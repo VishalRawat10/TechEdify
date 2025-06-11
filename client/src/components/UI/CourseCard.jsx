@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
-export default function CourseCard({ course, key }) {
+export default function CourseCard({ course }) {
   const navigate = useNavigate();
   return (
     <button
-      key={key}
       className="w-[23rem] h-max cursor-pointer text-left hover:opacity-75 after:content-seecourse"
       style={{ transition: "opacity 0.1s linear" }}
       onClick={() => navigate(`/courses/${course._id}`)}
@@ -13,7 +12,7 @@ export default function CourseCard({ course, key }) {
         <img
           src={course.profileImg}
           alt={course.name}
-          className="h-full aspect-auto rounded-xl"
+          className="h-52 aspect-auto rounded-xl"
         />
       </div>
 
