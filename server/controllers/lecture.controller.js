@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Lecture = require("../models/lecture");
+const cloudinary = require("cloudinary").v2;
 
 //get-lectures
 module.exports.getLectures = async (req, res, next) => {
@@ -17,19 +18,23 @@ module.exports.addLecture = async (req, res, next) => {
         return res.status(400).json({ message: errors.array().map((err) => err.msg).join(" ") });
     }
 
-    const { title, lectureUrl, description, thumbnailUrl } = req.body;
+    const { title, description } = req.body;
     try {
+
+        console.log(req.files);
         const lecture = new Lecture({
             courseId: req.course._id,
             title,
-            lectureVideo: {
-                filename: "",
-                url: lectureUrl
-            },
             description,
-            thumbnail: thumbnailUrl,
-            instructorId: req.user._id
+            instructorId: req.user.instructorId
         });
+
+        req.files.forEach((file) => {
+            lecture[file.fieldname].url = file.path;
+            lecture[file.fieldname].filename = file.filename;
+
+        })
+        console.log(lecture);
 
         req.course.lectures.push(lecture);
         await req.course.save();

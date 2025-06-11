@@ -10,7 +10,7 @@ const { generateJwt } = require("../utils/jwtUtils.js");
 module.exports.signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(401).json({ message: errors.array().map((err) => err.msg).join(" ") });
+        return res.status(400).json({ message: errors.array().map((err) => err.msg).join(" ") });
     }
     const { firstname, lastname, email, password } = req.body;
     try {
@@ -25,13 +25,18 @@ module.exports.signup = async (req, res, next) => {
             email,
             password: hashPassword
         });
-        await newUser.save();
         const token = generateJwt(newUser._id);
         res.cookie("token", token, {
             httpOnly: true,
             sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
+            signed: true
         });
+        newUser.currToken = token;
+        newUser.currDevice = req.device.type;
+        newUser.currLoggedInTime = new Date();
+        newUser.isLoggedIn = true;
+        await newUser.save();
         newUser.password = null;
         return res.status(200).json({
             message: "Welcome to codingShala!", success: true, user: newUser
@@ -46,7 +51,7 @@ module.exports.signup = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(401).json({ message: errors.array().map((err) => err.msg).join(" ") });
+        return res.status(400).json({ message: errors.array().map((err) => err.msg).join(" ") });
     }
     const { email, password } = req.body;
     try {
@@ -54,12 +59,26 @@ module.exports.login = async (req, res, next) => {
         if (user) {
             const isMatch = await bcrypt.compare(password, user.password);
             if (isMatch) {
+                if (user.currToken && user.isLoggedIn) {
+                    const blackListedToken = new BlacklistToken({
+                        token: user.currToken
+                    });
+                    await blackListedToken.save();
+                }
                 const token = generateJwt(user._id);
+                console.log(req.device.type);
+                user.currToken = token;
+                user.currDevice = req.device.type;
+                user.currLoggedInTime = new Date();
+                user.isLoggedIn = true;
+                await user.save();
                 res.cookie("token", token, {
                     httpOnly: true,
                     sameSite: 'Strict',
                     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
+                    signed: true
                 });
+
                 user.password = null;
                 return res.status(200).json({
                     message: "User logged in successfully.", success: true,
@@ -70,6 +89,7 @@ module.exports.login = async (req, res, next) => {
 
         res.status(401).json({ message: "Invalid email or password!" });
     } catch (err) {
+        console.log(err)
         res.status(401).json({ message: err.message });
     }
 }
@@ -79,8 +99,10 @@ module.exports.logout = async (req, res, next) => {
     try {
         await BlacklistToken.create({
             token: req.token
-        });
-        res.clearCookie("token");
+        })
+        req.user.isLoggedIn = false;
+        await req.user.save();
+        res.clearCookie("token", { signed: true });
         return res.status(200).json({ message: "Logged Out successfully!" });
     } catch (err) {
         return res.status(401).json({ message: err.message });
@@ -134,7 +156,7 @@ module.exports.updateUser = async (req, res, next) => {
     if (token) return res.status(401).json({ message: "Unauthorized!" });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(401).json({ message: errors.array().map((err) => err.msg).join(" ") });
+        return res.status(400).json({ message: errors.array().map((err) => err.msg).join(" ") });
     }
     try {
         const { firstname, lastname, email, about, DOB, phone, address } = req.body;
@@ -158,5 +180,26 @@ module.exports.updateUser = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Couldn't update.", error: err.message });
+    }
+}
+
+//Change password
+module.exports.updatePassword = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array().map((err) => err.msg).join(" ") });
+    }
+    const { password } = req.body;
+    try {
+        const hashPassword = await bcrypt.hash(password, 10);
+        req.user.password = hashPassword;
+        if (req.user.role === "instructor") {
+            req.user.isTempPassword = false;
+        }
+        await req.user.save();
+
+        return res.status(200).json({ message: "Password updated successfully!", success: true });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error!", error: err.message });
     }
 }

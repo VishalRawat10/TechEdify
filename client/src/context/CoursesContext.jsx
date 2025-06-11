@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { apiInstance } from "../../services/apis.js";
+import { apiInstance } from "../services/apis.js";
 export const CoursesContext = createContext();
 
 export const CoursesProvider = ({ children }) => {

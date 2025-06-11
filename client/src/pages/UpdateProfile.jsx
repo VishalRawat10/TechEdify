@@ -4,12 +4,12 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { UserContext } from "../context/UserContext";
 import { MessageContext } from "../context/MessageContext";
-import { apiInstance } from "../../services/apis";
-import { getMaxDob } from "../../services/utils";
+import { getMaxDob } from "../services/utils";
 import Loader from "../components/Loader";
 
 export default function UserProfile() {
-  const { user, setUser } = useContext(UserContext);
+  const { user, updateProfile, updateProfileImg, deleteProfileImg } =
+    useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
   const [showPhoto, setShowPhoto] = useState(false);
   const { setMessageInfo } = useContext(MessageContext);
@@ -35,38 +35,39 @@ export default function UserProfile() {
   }, [showPhoto]);
 
   //Upload Profile Image
-  const profileImgUpload = async (e) => {
+  const profileImgUpload = (e) => {
     if (!e.target.files[0] || isLoading) return;
     setShowPhoto(false);
     const formData = new FormData();
     formData.append("profileImg", e.target.files[0]);
-    try {
-      setIsLoading(true);
-      const res = await apiInstance.put("/user/profile/profileImg", formData);
-      setUser(res.data.user);
-      setIsLoading(false);
-      setMessageInfo("Profile Photo uploaded successfully!", false);
-    } catch (err) {
-      console.err(err);
-      setMessageInfo("Unable to upload prfile photo!", true);
-    }
+    setIsLoading(true);
+    updateProfileImg(formData)
+      .then((res) => {
+        setIsLoading(false);
+        setMessageInfo("Profile Photo uploaded successfully!", false);
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        console.err(err);
+        setMessageInfo("Unable to upload prfile photo!", true);
+      });
   };
 
   // Delete Profile Photo
-  const deleteProfileImg = async (e) => {
+  const profileImgDeleteHandler = (e) => {
     if (isLoading) return;
     setShowPhoto(false);
-    try {
-      setIsLoading(true);
-      const res = await apiInstance.delete("/user/profile/profileImg");
-      setUser(res.data.user);
-      setIsLoading(false);
-      setMessageInfo("Profile Photo deleted!", false);
-    } catch (err) {
-      setIsLoading(false);
-      console.error(err);
-      setMessageInfo("Unable to delete profile photo.", true);
-    }
+    setIsLoading(true);
+    deleteProfileImg()
+      .then((res) => {
+        setIsLoading(false);
+        setMessageInfo("Profile Photo deleted!", false);
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        console.error(err);
+        setMessageInfo("Unable to delete profile photo.", true);
+      });
   };
 
   // Handle PersonalDetails Change
@@ -79,20 +80,20 @@ export default function UserProfile() {
   };
 
   //Update Changes
-  const updateChanges = async (e) => {
+  const updateChanges = (e) => {
     e.preventDefault();
     if (isLoading) return;
-    try {
-      setIsLoading(true);
-      const res = await apiInstance.put("/user/profile", userPersonalDetails);
-      setUser(res.data.user);
-      setIsLoading(false);
-      setMessageInfo("Details updated successfully!", false);
-    } catch (err) {
-      console.error(err);
-      setIsLoading(false);
-      setMessageInfo("Unable to update changes!", true);
-    }
+    setIsLoading(true);
+    updateProfile(userPersonalDetails)
+      .then((res) => {
+        setIsLoading(false);
+        setMessageInfo("Details updated successfully!", false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsLoading(false);
+        setMessageInfo("Unable to update changes!", true);
+      });
   };
 
   //Discard Changes
@@ -189,7 +190,7 @@ export default function UserProfile() {
               </button>
               <button
                 className="cursor-pointer px-4 bg-white/60  dark:bg-black/60 rounded-full p-2  text-sm hover:bg-white dark:hover:bg-black"
-                onClick={(e) => deleteProfileImg(e)}
+                onClick={profileImgDeleteHandler}
               >
                 Delete
               </button>

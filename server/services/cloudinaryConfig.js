@@ -12,6 +12,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: "CodingShala",
+        resource_type: "raw"
     },
 });
 

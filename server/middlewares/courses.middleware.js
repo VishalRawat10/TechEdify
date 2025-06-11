@@ -12,12 +12,13 @@ module.exports.isEnrolledStudent = async (req, res, next) => {
         req.course = course;
         return next();
     }
-    return res.status(401).json({ message: "Unathorized!", success: true, error: "not logged in" });
+    return res.status(401).json({ message: "Unauthorized!", success: true, error: "not logged in" });
 }
 
 module.exports.isCourseInstructor = async (req, res, next) => {
     const { courseId } = req.params;
     const course = await Course.findById(courseId).populate("instructor").populate("lectures");
+    console.log(course);
     if (!course) {
         return res.status(400).json({ message: "Course not found!", success: false });
     }
@@ -29,3 +30,4 @@ module.exports.isCourseInstructor = async (req, res, next) => {
 
     return res.status(401).json({ message: "Unathorized!", success: false });
 }
+

@@ -24,4 +24,8 @@ router.route("/profile").get(authMiddleware, wrapAsync(userController.getUserPro
 ], wrapAsync(userController.updateUser));
 
 router.route("/profile/profileImg").put(authMiddleware, upload.single("profileImg"), wrapAsync(userController.uploadProfileImg)).delete(authMiddleware, wrapAsync(userController.destroyProfileImg));
+
+router.route("/update-password").put(authMiddleware, [body("password").isLength({ min: 6 }).withMessage("Password must be minimum 6 character long.")], userController.updatePassword);
+
+
 module.exports = router;

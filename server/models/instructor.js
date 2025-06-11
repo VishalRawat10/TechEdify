@@ -6,9 +6,13 @@ const instructorSchema = new Schema({
         ref: "User",
         required: true
     },
+    actualEmail: {
+        type: String,
+        // required: true,
+    },
     messageForStudents: {
         type: String,
-        required: true,
+        // required: true,
     },
     name: {
         type: String,
@@ -21,6 +25,10 @@ const instructorSchema = new Schema({
     profileImg: {
         type: String,
         filename: String
+    },
+    isSuspended: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 
