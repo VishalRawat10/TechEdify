@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 const Loader = () => {
   return (
-    <div className="z-40 w-full items-center fixed top-24 justify-center">
+    <div className="z-40 w-screen items-center fixed top-30 justify-center">
       <StyledWrapper>
         <div className="loader-container">
           <div className="loader" />
