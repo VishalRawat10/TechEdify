@@ -9,7 +9,7 @@ const ai = new GoogleGenAI({
 });
 
 export default function ChatMessageInputBox({ setChats, setIsLoading }) {
-  const [query, setQuery] = useState();
+  const [query, setQuery] = useState("");
   const { setMessageInfo } = useContext(MessageContext);
 
   //handle form submit
@@ -48,7 +48,7 @@ export default function ChatMessageInputBox({ setChats, setIsLoading }) {
       <input
         type="text"
         value={query}
-        className="focus:outline-none w-full text-sm"
+        className="focus:outline-none w-full text-sm placeholder:text-gray-600 dark:placeholder:text-gray-400"
         id="query"
         placeholder="Write your doubt here..."
         onChange={(e) => setQuery(e.target.value)}
