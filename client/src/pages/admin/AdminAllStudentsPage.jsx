@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import AdminStudentCard from "../../components/UI/Admin/AdminStudentCard";
 import { MessageContext } from "../../context/MessageContext";
 

@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { MessageContext } from "../../../context/MessageContext";
-import { apiInstance } from "../../../services/apis";
+import { apiInstance } from "../../../services/axios.config";
 import { Link } from "react-router-dom";
 
 export default function AdminStudentCard({ students, setStudents, idx }) {

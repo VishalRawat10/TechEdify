@@ -4,12 +4,11 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const device = require('express-device');
 
-const coursesRouter = require("./routes/courses.js");
-const messageRouter = require("./routes/message.js");
-const userRouter = require("./routes/user.js");
-const reviewRouter = require("./routes/review.js");
-const lectureRouter = require("./routes/lecture.js");
-const adminRouter = require("./routes/admin.js");
+const coursesRouter = require("./routes/courses.routes.js");
+const messageRouter = require("./routes/message.routes.js");
+const userRouter = require("./routes/user.routes.js");
+const reviewRouter = require("./routes/review.routes.js");
+const adminRouter = require("./routes/admin.routes.js");
 
 
 //Useful middlewares =============================================
@@ -23,16 +22,17 @@ app.use(cors({
 app.use(device.capture());
 
 // Routes =========================================================
-app.use("/api/courses", coursesRouter);
-app.use("/api/user", userRouter);
-app.use("/api/messages", messageRouter);
-app.use("/api/courses/", reviewRouter);
-app.use("/api/courses/", lectureRouter);
-app.use("/api/admin", adminRouter)
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tutors", userRouter);
+app.use("/api/v1/courses", coursesRouter);
+app.use("/api/v1/courses/:courseId/reviews", reviewRouter);
+app.use("/api/v1/messages", messageRouter);
+app.use("/api/v1/admin", adminRouter)
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {
-    return res.status(err.status || 500).json({ message: err.message });
+    console.log(err);
+    return res.status(err.status || 500).json({ message: err.message || "Internal server error!" });
 });
 
 module.exports = app;

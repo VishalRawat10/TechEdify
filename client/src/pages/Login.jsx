@@ -38,7 +38,7 @@ export default function Login() {
           setIsLoading(false);
           setMessageInfo("Welcome back to TechEdify!", false);
           if (res.data.user?.role === "instructor") {
-            navigate("/instructor/dashboard");
+            navigate("/instructor/my-courses");
           } else {
             navigate("/user/dashboard");
           }

@@ -7,7 +7,7 @@ import Loader from "./components/Loader";
 
 import AllContextProvider from "./context/AllContextProvider";
 import { AdminProvider } from "./context/AdminContext";
-import StudentRoutes from "./routes/StudentRoutes";
+import UserRoutes from "./routes/UserRoutes";
 import InstructorRoutes from "./routes/InstructorRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 
@@ -16,7 +16,7 @@ export default function App() {
     <AllContextProvider>
       <Suspense fallback={<Loader />}>
         <Routes>
-          <Route path={"/*"} element={<StudentRoutes />} />
+          <Route path={"/*"} element={<UserRoutes />} />
           <Route
             path={"/admin/*"}
             element={

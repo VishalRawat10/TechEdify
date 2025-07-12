@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const User = require("../models/user");
-const Instructor = require("../models/instructor");
+const Tutor = require("./tutor");
 
 
 const courseSchema = new Schema({
-    name: {
+    title: {
         type: String,
         required: true,
         trim: true,
     },
-    instructor: {
+    tutor: {
         type: Schema.Types.ObjectId,
         ref: "Instructor",
         required: true,
@@ -22,20 +22,15 @@ const courseSchema = new Schema({
         },
         min: [1, 'A course must have at least one lecture.'],
     },
-    profileImg: {
-        type: String,
-        required: true,
-        // validate: {
-        //     validator: function (v) {
-        //         return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v);
-        //     },
-        //     message: 'Invalid profile picture URL.',
-        // },
-    },
-    about: {
-        type: String,
-        required: true,
-        trim: true,
+    profileImage: {
+        url: {
+            type: String,
+            required: true,
+        },
+        filename: {
+            type: String,
+            required: true,
+        }
     },
     alias: {
         type: String,
@@ -48,7 +43,8 @@ const courseSchema = new Schema({
     },
     desciption: {
         type: String,
-        // required: true,
+        required: true,
+        trim: true
     },
     reviews: {
         type: [Schema.Types.ObjectId],

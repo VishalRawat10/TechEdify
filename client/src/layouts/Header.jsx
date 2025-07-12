@@ -9,8 +9,8 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 import { MessageContext } from "../context/MessageContext";
-import StudentNavList from "../components/UI/Student/StudentNavList";
-import InstructorNavList from "../components/UI/Instructor/InstructorNavList";
+import StudentNavList from "../components/ui/StudentNavList";
+import InstructorNavList from "../components/ui/tutor/InstructorNavList";
 
 export default function Header() {
   const [sideMenu, setSideMenu] = useState(false); //Side menu draw

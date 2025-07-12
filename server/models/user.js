@@ -5,14 +5,9 @@ const Course = require("../models/course");
 
 const userSchema = new Schema({
     fullname: {
-        firstname: {
-            type: String,
-            required: true,
-            minLength: [2, "Firstname should contain 2 more alphabates."]
-        },
-        lastname: {
-            type: String,
-        }
+        type: String,
+        required: true,
+        min: 2
     },
     email: {
         type: String,
@@ -22,50 +17,23 @@ const userSchema = new Schema({
     password: {
         type: String,
         select: false,
-        required: () => !this.tempPassword,
+        required: true,
     },
-    coursesEnrolled: {
+    enrolledCourses: {
         type: [Schema.Types.ObjectId],
         ref: "Course",
-        select: function () {
-            return this.role === "student";
-        }
     },
-    profileImg: {
+    profileImage: {
         url: String,
         filename: String,
     },
     DOB: {
-        type: String,
+        type: Date,
     },
     address: String,
     country: String,
     phone: String,
     about: String,
-    role: {
-        enum: ["student", "instructor", "admin"],
-        type: String,
-        default: "student",
-    },
-    isTempPassword: {
-        type: Boolean,
-        default: function () {
-            return this.role === "instructor";
-        },
-        select: function () {
-            return this.role === "instructor"
-        }
-    },
-    instructorId: {
-        type: Schema.Types.ObjectId,
-        ref: "Instructor",
-        required: function () {
-            return this.role === "instructor";
-        },
-        select: function () {
-            return this.role === "instructor"
-        }
-    },
     isSuspended: {
         type: Boolean,
         default: false
@@ -75,7 +43,7 @@ const userSchema = new Schema({
         required: true,
         default: false
     },
-    currLoggedInTime: {
+    currLoginTime: {
         type: Date,
     },
     currToken: {

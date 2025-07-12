@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { apiInstance } from "../services/apis";
+import { apiInstance } from "../services/axios.config";
 
 export const AdminContext = createContext();
 export const AdminProvider = ({ children }) => {

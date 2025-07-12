@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import AdminInstructorCard from "../../components/UI/Admin/AdminInstructorCard";
 import { MessageContext } from "../../context/MessageContext";
 import { Link } from "react-router-dom";

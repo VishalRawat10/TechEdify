@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { MessageContext } from "../../../context/MessageContext";
-import { apiInstance } from "../../../services/apis";
+import { apiInstance } from "../../../services/axios.config";
 import Delete from "@mui/icons-material/Delete";
 
 export default function AdminCourseCard({ courses, setCourses, idx }) {

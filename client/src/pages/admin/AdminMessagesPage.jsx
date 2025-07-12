@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { MessageContext } from "../../context/MessageContext";
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 
 export default function AdminContactMessagesPage() {
   const [messages, setMessage] = useState([]);

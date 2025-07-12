@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import AdminCourseCard from "../../components/UI/Admin/AdminCourseCard";
 
 export default function AdminAllCourses() {

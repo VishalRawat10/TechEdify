@@ -3,15 +3,15 @@ import { lazy } from "react";
 import AuthWrapper from "../components/AuthWrapper";
 
 const InstructorDashboard = lazy(() =>
-  import("../pages/instructor/InstructorDashboard")
+  import("../pages/tutor/InstructorDashboard")
 );
-const EditCourse = lazy(() => import("../pages/instructor/EditCourse"));
+const EditCourse = lazy(() => import("../pages/tutor/EditCourse"));
 const InstructorAppLayout = lazy(() =>
   import("../layouts/InstructorAppLayout")
 );
-const MyCourses = lazy(() => import("../pages/instructor/MyCourses"));
-const CreateCourse = lazy(() => import("../pages/instructor/CreateCourse"));
-const AddLecture = lazy(() => import("../pages/instructor/AddLecture"));
+const MyCourses = lazy(() => import("../pages/tutor/MyCourses"));
+const CreateCourse = lazy(() => import("../pages/tutor/CreateCourse"));
+const AddLecture = lazy(() => import("../pages/tutor/AddLecture"));
 const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 
 export default function InstructorRoutes() {

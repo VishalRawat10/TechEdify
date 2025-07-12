@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import { MessageContext } from "../../context/MessageContext";
 import { UserContext } from "../../context/UserContext";
 

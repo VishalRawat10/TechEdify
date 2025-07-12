@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import { useNavigate } from "react-router-dom";
 import { MessageContext } from "../../context/MessageContext";
 import Loader from "../../components/Loader";

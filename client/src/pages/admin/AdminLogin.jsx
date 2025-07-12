@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { apiInstance } from "../../services/apis";
+import { apiInstance } from "../../services/axios.config";
 import { AdminContext } from "../../context/AdminContext";
 import { MessageContext } from "../../context/MessageContext";
 import { useNavigate } from "react-router-dom";

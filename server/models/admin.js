@@ -11,13 +11,13 @@ const adminSchema = new Schema({
         required: true,
         select: false
     },
-    comapanyEmail: {
+    personalEmail: {
         type: String,
         required: true,
     },
     email: {
         type: String,
-        // required : true,
+        required: true,
     }
 });
 

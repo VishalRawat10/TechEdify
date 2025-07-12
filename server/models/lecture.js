@@ -50,9 +50,9 @@ const lectureSchema = new Schema({
             type: String,
         }
     },
-    instructorId: {
+    tutorId: {
         type: Schema.Types.ObjectId,
-        ref: "Intructor",
+        ref: "Tutor",
         required: true,
     },
     status: {

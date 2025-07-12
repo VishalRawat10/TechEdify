@@ -42,14 +42,14 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Box className="p-6 bg-gray-100 min-h-screen">
+    <Box className="p-6 bg-gray-100 dark:bg-[var(--dark-bg)] min-h-screen">
       <Typography variant="h4" gutterBottom className="mb-6 font-bold">
         Admin Dashboard
       </Typography>
       <Grid container spacing={4}>
         {stats.map((stat, index) => (
           <Grid item xs={12} md={4} key={index}>
-            <StatCard {...stat} />
+            <StatCard {...stat} className="dark:bg-[var(--dark-bg-2)]" />
           </Grid>
         ))}
       </Grid>

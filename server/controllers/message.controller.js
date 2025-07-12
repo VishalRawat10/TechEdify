@@ -1,4 +1,3 @@
-const { validationResult } = require("express-validator");
 const Message = require("../models/message");
 
 //get-messages from contact page

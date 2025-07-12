@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { apiInstance } from "../services/apis";
+import { apiInstance } from "../services/axios.config";
 export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState();

@@ -17,7 +17,7 @@ import Loader from "../components/Loader";
 import { MessageContext } from "../context/MessageContext";
 import { ThemeContext } from "../context/ThemeContext";
 import Message from "../components/Message";
-import { apiInstance } from "../services/apis";
+import { apiInstance } from "../services/axios.config";
 
 export default function InstructorAppLayout() {
   const [isLoading, setIsLoading] = useState(false);
