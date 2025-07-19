@@ -9,9 +9,6 @@ const upload = multer({ storage });
 
 //For admin
 router.route("/").get(authenticateAdmin, wrapAsync(userController.getUsers));
-router.route("/:userId").get(authenticateAdmin, wrapAsync(userController.getUser)).delete(authenticateAdmin, wrapAsync(userController.destroyUser));
-router.route("/:userId/suspend").put(authenticateAdmin, wrapAsync(userController.suspend));
-router.route("/:userId/unsuspend").put(authenticateAdmin, wrapAsync(userController.unsuspend));
 
 //For user
 router.route("/signup").post(wrapAsync(userController.signup));
@@ -20,5 +17,11 @@ router.route("/logout").post(isAuthenticated, wrapAsync(userController.logout));
 router.route("/profile").get(isAuthenticated, wrapAsync(userController.getUserProfile)).put(isAuthenticated, wrapAsync(userController.updateUser));
 router.route("/profile/profileImage").put(isAuthenticated, upload.single("profileImage"), wrapAsync(userController.uploadProfileImage)).delete(isAuthenticated, wrapAsync(userController.destroyProfileImage));
 router.route("/update-password").put(isAuthenticated, wrapAsync(userController.updatePassword));
+
+router.route("/:userId").get(authenticateAdmin, wrapAsync(userController.getUser)).delete(authenticateAdmin, wrapAsync(userController.destroyUser));
+router.route("/:userId/suspend").put(authenticateAdmin, wrapAsync(userController.suspend));
+router.route("/:userId/unsuspend").put(authenticateAdmin, wrapAsync(userController.unsuspend));
+
+
 
 module.exports = router;
