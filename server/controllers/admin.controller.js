@@ -18,6 +18,22 @@ module.exports.login = async (req, res, next) => {
     }
     const admin = await Admin.findOne({ email: adminEmail }).select("+password");
 
+    if (admin.isTempPassword) {
+        if (adminPassword === admin.password) {
+            const adminToken = jwt.sign({ _id: admin._id }, process.env.ADMIN_JWT_SECRET_KEY, { expiresIn: process.env.ADMIN_JWT_EXPIRES_IN });
+            res.cookie("adminToken", adminToken, {
+                httpOnly: true,
+                sameSite: 'Strict',
+                secure: true,
+                signed: true,
+                maxAge: 10 * 60 * 60 * 1000
+            });
+            return res.status(200).json({ message: "Create new password to continue.", admin });
+        } else {
+            return next(new ExpressError(401, "Invalid email or password!"));
+        }
+    }
+
     //IS ADMIN DOES NOT EXIST WITH GIVEN EMAIL
     if (!admin) {
         return next(new ExpressError(401, "Incorrect email or password!"));
@@ -25,7 +41,7 @@ module.exports.login = async (req, res, next) => {
 
     const matched = await bcrypt.compare(adminPassword, admin.password);
     if (matched) {
-        const adminToken = jwt.sign({ _id: admin._id }, process.env.ADMIN_JWT_SECRET_KEY, { expiresIn: process.env.ADMIN_JWT_EXPIRES_IN });
+        const adminToken = jwt.sign({ _id: admin._id }, process.env.ADMIN_JWT_SECRET_KEY, { expiresIn: process.env.ADMIN_JWT_EXPIRES_IN || "10h" });
         res.cookie("adminToken", adminToken, {
             httpOnly: true,
             sameSite: 'Strict',
