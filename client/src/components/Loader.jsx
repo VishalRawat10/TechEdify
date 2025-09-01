@@ -3,8 +3,11 @@ import styled from "styled-components";
 
 const Loader = () => {
   return (
-    <div className="z-40 w-screen items-center fixed top-30 justify-center">
-      <StyledWrapper>
+    <div
+      className="z-50 w-full flex items-center fixed justify-center h-screen bg-black/40"
+      aria-label="Loading"
+    >
+      <StyledWrapper className="absolute top-30">
         <div className="loader-container">
           <div className="loader" />
           <div className="loader-text">Loading...</div>
