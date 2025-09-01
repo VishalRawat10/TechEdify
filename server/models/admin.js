@@ -1,7 +1,10 @@
 const { Schema, model } = require("mongoose");
 
 const adminSchema = new Schema({
-    name: String,
+    fullname: {
+        type: String,
+        required: true,
+    },
     isTempPassword: {
         type: Boolean,
         default: true,
@@ -14,6 +17,7 @@ const adminSchema = new Schema({
     personalEmail: {
         type: String,
         required: true,
+        select: false,
     },
     email: {
         type: String,
