@@ -7,24 +7,22 @@ const ExpressError = require("../utils/ExpressError.js");
 
 //SignUp controller
 module.exports.signup = async (req, res, next) => {
-    const { firstname, lastname, email, password } = req.body;
-    if (!firstname || !email || password) {
+    const { fullname, email, password } = req.body;
+    if (!fullname || !email || !password) {
         return next(new ExpressError(400, "Incomplete user information!"));
     }
     const user = await User.findOne({ email });
     if (user) return next(new ExpressError(400, "The email is already associated with an account! Please sign in or use other email."));
     const hashPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
-        fullname: {
-            firstname,
-            lastname
-        },
+        fullname: fullname,
         email,
         password: hashPassword
     });
     const token = generateJwt(newUser._id);
     res.cookie("token", token, {
         httpOnly: true,
+        secure: true,
         sameSite: 'Strict',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
         signed: true
@@ -48,7 +46,7 @@ module.exports.login = async (req, res, next) => {
         return next(new ExpressError(400, "Email or password missing!"));
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password").populate("enrolledCourses");
     if (user) {
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {
@@ -67,6 +65,7 @@ module.exports.login = async (req, res, next) => {
             res.cookie("token", token, {
                 httpOnly: true,
                 sameSite: 'Strict',
+                secure: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
                 signed: true
             });
@@ -94,7 +93,8 @@ module.exports.logout = async (req, res, next) => {
 
 // UserProfile controller
 module.exports.getUserProfile = async (req, res, next) => {
-    return res.status(200).json({ user: req.user });
+    const user = await User.findById(req.user._id).populate("enrolledCourses");
+    return res.status(200).json({ user, message: "User fetched successfully!" });
 }
 
 //Profile Image Upload
@@ -106,7 +106,7 @@ module.exports.uploadProfileImage = async (req, res, next) => {
 
 //Destroy Profile Image
 module.exports.destroyProfileImage = async (req, res, next) => {
-    const result = await cloudinary.uploader.destroy(req.user.profileImage.filename);
+    const result = await cloudinary.uploader.destroy(req.user.profileImage.filename || `TechEdify/Users/${req.user._id}/profile-image`);
     if (result.result === "not found") return next(new ExpressError(400, "Image not found!"));
     const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImage: { url: "", filename: "" } } }, { new: true });
     return res.status(200).json({ user, message: "Profile image deleted successfully" });
@@ -129,13 +129,21 @@ module.exports.updateUser = async (req, res, next) => {
 
 //Change password
 module.exports.updatePassword = async (req, res, next) => {
-    const { password } = req.body;
-    if (!password || password.length < 8) {
-        return next(new ExpressError(400, "Password should be minimum 8 character long!"));
+    const { newPassword, currentPassword } = req.body;
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword)) {
+        return next(new ExpressError(400, "Invalid password format!"));
     }
-    const hashPassword = await bcrypt.hash(password, 10);
-    req.user.password = hashPassword;
-    await req.user.save();
+
+    const user = await User.findById(req.user._id).select("password");
+
+    const match = await bcrypt.compare(currentPassword, user.password);
+
+    if (!match) {
+        return next(new ExpressError(403, "Current password is incorrect!"));
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+    await User.findByIdAndUpdate(req.user._id, { password: hashPassword });
     return res.status(200).json({ message: "Password updated successfully!" });
 }
 
