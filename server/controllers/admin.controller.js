@@ -29,6 +29,7 @@ module.exports.login = async (req, res, next) => {
         res.cookie("adminToken", adminToken, {
             httpOnly: true,
             sameSite: 'Strict',
+            secure: true,
             signed: true,
             maxAge: 10 * 60 * 60 * 1000
         });
