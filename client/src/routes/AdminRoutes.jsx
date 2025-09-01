@@ -21,7 +21,6 @@ const AdminAllInstructorsPage = lazy(() =>
 );
 const CreateInstructor = lazy(() => import("../pages/admin/CreateInstructor"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
-const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 
 export default function AdminRoutes() {
   return (
@@ -51,7 +50,7 @@ export default function AdminRoutes() {
         <Route path="instructors" element={<AdminAllInstructorsPage />} />
         <Route path="instructors/new" element={<CreateInstructor />} />
         <Route path="messages" element={<AdminMessagesPage />} />
-        <Route path="*" element={<PageNotFound />} />
+        {/* <Route path="*" element={<PageNotFound />} /> */}
       </Route>
     </Routes>
   );

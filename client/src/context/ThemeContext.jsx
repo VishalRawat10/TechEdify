@@ -15,8 +15,8 @@ export const ThemeProvider = ({ children }) => {
   };
   useEffect(() => {
     theme === "dark"
-      ? document.querySelector("body").classList.add("dark")
-      : document.querySelector("body").classList.remove("dark");
+      ? document.body.classList.add("dark")
+      : document.body.classList.remove("dark");
   }, [theme]);
 
   return (

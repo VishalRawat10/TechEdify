@@ -1,16 +1,13 @@
 import { useContext, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import PersonIcon from "@mui/icons-material/Person";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 import { MessageContext } from "../context/MessageContext";
-import StudentNavList from "../components/ui/StudentNavList";
-import InstructorNavList from "../components/ui/tutor/InstructorNavList";
+import NavList from "../components/ui/NavList";
 
 export default function Header() {
   const [sideMenu, setSideMenu] = useState(false); //Side menu draw
@@ -31,13 +28,13 @@ export default function Header() {
 
   return (
     <>
-      <header className={"z-50 relative"}>
+      <header className="z-10 relative font-heading">
         <nav
           className={
-            "max-w-screen overflow-x-hidden h-[var(--header-h)] flex items-center px-4 md:px-8 bg-white justify-between dark:bg-[var(--dark-bg-3)]  md:after:content-none shadow-xl dark:shadow-white/10 relative" +
+            "max-w-screen overflow-x-hidden h-[var(--header-h)] flex items-center px-4 md:px-8 bg-header-light dark:bg-header-dark justify-between md:after:content-none shadow-sm dark:shadow-white/10 relative" +
             " " +
             (sideMenu
-              ? "after:content-[''] after:w-screen after:h-screen after:fixed after:top-0 after:left-0 after:bg-black/20"
+              ? "after:content-[''] after:w-screen after:h-screen after:fixed after:top-0 after:left-0 after:bg-dark/20"
               : "")
           }
           onClick={(e) => {
@@ -59,22 +56,24 @@ export default function Header() {
               loading="lazy"
             />
           </Link>
+
           {/* Menu Button  */}
           <div
-            className="text-[var(--base)] text-2xl flex items-center md:hidden"
+            className="flex items-center md:hidden"
             onClick={() => setSideMenu(!sideMenu)}
           >
-            <MenuIcon sx={{ fontSize: "2rem" }} />
+            <MenuIcon sx={{ fontSize: "2rem", color: "var(--main)" }} />
           </div>
+
           {/* Side Menu or Menu  */}
           <div
             className={
               (sideMenu ? "translate-x-0 " : "-translate-x-full ") +
-              "fixed top-0 left-0 transition-transform flex  flex-col  w-2/3 items-center rounded-r-xl  gap-4 bg-white shadow-[0_0_2px_1px_grey] dark:bg-[var(--dark-bg-3)] z-50 md:flex md:static md:bg-transparent md:flex-row h-full md:w-fit md:min-w-none md:py-0 md:rounded-none md:dark:bg-transparent md:shadow-none md:px-4 md:gap-4 md:translate-x-0"
+              "fixed top-0 left-0 transition-transform flex  flex-col min-w-[15rem] items-center rounded-r-xl  gap-4 pb-12  bg-header-light shadow-sm dark:bg-header-dark z-50 md:flex md:static md:bg-transparent md:flex-row h-full md:w-fit md:min-w-none md:py-0 md:rounded-none md:dark:bg-transparent md:shadow-none md:px-4 md:gap-4 md:translate-x-0"
             }
           >
             {/* Menu logo */}
-            <button className="border-b-2 border-[var(--base)] md:hidden text-black dark:text-white h-[var(--header-h)] w-full flex items-center justify-center">
+            <button className="border-b-2 border-main md:hidden text-light-primary dark:text-dark-primary h-[var(--header-h)] w-full flex items-center justify-center">
               <img
                 src="/images/smallerlogo.png"
                 alt=""
@@ -82,23 +81,19 @@ export default function Header() {
                 loading="lazy"
               />
             </button>
+
             {/* Theme Toggle  */}
             <div
               onClick={changeTheme}
-              className="dark:text-white cursor-pointer"
+              className="dark:text-dark-primary text-light-primary cursor-pointer"
               title="theme"
             >
               {theme === "light" ? <DarkModeIcon /> : <LightModeIcon />}
             </div>
-            {/* Navigation Links  */}
-            {/* Role based nav-list items  */}
-            {user?.role === "instructor" ? (
-              <InstructorNavList />
-            ) : (
-              <StudentNavList />
-            )}
+            <NavList />
+
             {/* Log In / Sign up /Log out Buttons  */}
-            <div className="flex border-2 border-[var(--base)] rounded-[2rem] bg-[var(--base)] text-white font-semibold mx-6 mt-auto md:mt-0 md:mx-0 ">
+            <div className="flex border-2 border-main rounded-[2rem] bg-main font-semibold mx-6 mt-auto md:mt-0 md:mx-0 ">
               {user ? (
                 <button className="nav-btns" onClick={handleLogout}>
                   Log out
@@ -107,41 +102,37 @@ export default function Header() {
                 <>
                   <button
                     className="nav-btns"
-                    onClick={() => navigate("/user/signup")}
+                    onClick={() => navigate("/signup")}
                   >
                     Sign up
                   </button>
                   <button
                     className="nav-btns"
-                    onClick={() => navigate("/user/login")}
+                    onClick={() => navigate("/login")}
                   >
                     Log in
                   </button>
                 </>
               )}
             </div>
+
             {/* Dashboard Button  */}
             {user && (
               <Link
                 className="flex flex-row items-center justify-center gap-2 cursor-pointer hover:opacity-75 hover:underline mb-12 md:mb-0"
                 title="dashboard"
-                to={
-                  user?.role === "instructor"
-                    ? "/instructor/dashboard"
-                    : "/user/dashboard"
-                }
+                to="/dashboard"
               >
                 <img
-                  src={user?.profileImg?.url || "/svg/Person.svg"}
+                  src={user?.profileImage?.url || "/images/User.png"}
                   className="h-12 w-12 object-cover rounded-full border-2"
-                  alt={user?.profileImg?.filename}
+                  alt={user?.profileImage?.filename}
                   loading="lazy"
                 />
               </Link>
             )}
           </div>
         </nav>
-        {/* <Message /> */}
       </header>
     </>
   );

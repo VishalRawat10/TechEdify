@@ -1,48 +1,47 @@
 import { useEffect, useState, useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import EditIcon from "@mui/icons-material/Edit";
+import {
+  FormButton,
+  FormInput,
+  FormOption,
+  FormSelect,
+  FormTextarea,
+  AddChapterBtn,
+} from "../../components/FormComponents";
 
-import Loader from "../../components/Loader";
-import { getInstructorCourse } from "../../services/utils";
 import { MessageContext } from "../../context/MessageContext";
 import { apiInstance } from "../../services/axios.config";
+import { TutorContext } from "../../context/TutorContext";
+import { validateChapters, validateCourseDetails } from "../../services/utils";
 
 export default function EditCourse() {
   const { courseId } = useParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const [course, setCourse] = useState(null);
-  const [courseDetails, setCourseDetails] = useState({
-    name: course?.name || "",
-    profileImg: course?.profileImg || null,
-    about: course?.about || "",
-    alias: course?.alias || "",
-    price: course?.price || "",
-  });
-  const [chapters, setChapters] = useState(course?.chapters || []); //Course Chapters
-  const [newProfileImg, setNewProfileImg] = useState(null);
-
+  const { setIsLoading, isLoading } = useContext(TutorContext);
   const { setMessageInfo } = useContext(MessageContext);
-  const navigate = useNavigate();
+  const [course, setCourse] = useState();
+  const [courseDetails, setCourseDetails] = useState({});
+  const [chapters, setChapters] = useState([]); //Course Chapters
+  const [showLectures, setShowLectures] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    getInstructorCourse(courseId)
-      .then((res) => {
-        setCourse(res.data.course);
-        setChapters(res.data.course.chapters);
-        setCourseDetails(res.data.course);
-        console.log(res.data.course);
-      })
-      .catch((err) => {
-        console.log(err);
-        setMessageInfo(err.response.data.message);
-        navigate("/instructor/my-courses");
-      })
-      .finally((err) => {
+    const getCourse = async () => {
+      setIsLoading(true);
+      try {
+        const res = await apiInstance.get(`/tutors/courses/${courseId}`);
         setIsLoading(false);
-      });
+        setCourse(res.data.course);
+        setCourseDetails(res.data.course);
+        setChapters(res.data.course.chapters);
+      } catch (err) {
+        setIsLoading(false);
+        setMessageInfo(err.response.data.message, true);
+      }
+    };
+    getCourse();
   }, []);
 
   //input chnage handler
@@ -56,29 +55,24 @@ export default function EditCourse() {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append("profileImg", newProfileImg);
-      formData.append("name", courseDetails.name);
-      formData.append("about", courseDetails.about);
+      if (courseDetails.thumbnail) {
+        formData.append("thumbnail", courseDetails.thumbnail);
+      }
+      formData.append("title", courseDetails.title);
+      formData.append("description", courseDetails.description);
       formData.append("alias", courseDetails.alias);
       formData.append("price", courseDetails.price);
+      formData.append("type", courseDetails.type);
       formData.append("chapters", JSON.stringify(chapters)); // Important
-      const res = await apiInstance.put(
-        `courses/instructor/my-courses/${courseId}/edit`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setCourse(res.data.course);
-      setChapters(res.data.course.chapters);
+
+      const res = await apiInstance.put(`/courses/${courseId}`, formData);
+      setCourseDetails(res.data.course);
       setMessageInfo(res.data.message, false);
     } catch (err) {
-      console.log(err);
       setMessageInfo(err.response.data.message, true);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   //handleChaptersChange
@@ -91,236 +85,241 @@ export default function EditCourse() {
   //discard function
   const discardChanges = (e) => {
     e.preventDefault();
-    setCourseDetails({
-      name: course?.name || "",
-      profileImg: course?.profileImg || null,
-      about: course?.about || "",
-      alias: course?.alias || "",
-      price: course?.price || "",
-    });
+    setCourseDetails(course);
     setChapters(course?.chapters);
   };
 
-  console.log(chapters);
+  const errors = validateCourseDetails(courseDetails);
+  const chapterErrors = validateChapters(chapters);
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <div className="px-6 h-[calc(100vh-6rem)]">
-      <h2 className="text-2xl font-semibold">Edit Course</h2>
-      <div className="grid grid-cols-3 gap-x-4 mt-4">
-        {/* Course details  */}
+  return (
+    <div className="flex flex-col h-[calc(100dvh-5rem)] py-4 px-4 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 gap-4 sm:px-10 lg:flex-row lg:px-2 lg:overflow-hidden lg:gap-0">
+      {/* Edit course form  */}
+      <div className="rounded-xl  w-full mx-auto lg:px-6 xl:w-[60rem] ">
+        <h1 className="text-xl flex gap-2 items-center text-black dark:text-white sm:text-2xl">
+          <EditIcon />
+          {course?.title}
+        </h1>
         <form
-          className="col-span-2 text-sm flex flex-col gap-2 h-[calc(100vh-8rem)] overflow-auto scrollbar-none"
-          onSubmit={(e) => handleFormSubmit(e)}
+          className="flex flex-col gap-6 mt-4 h-fit overflow-y-auto scrollbar-none lg:h-[calc(100vh-9rem)]"
+          onSubmit={handleFormSubmit}
         >
-          <div className="w-full flex flex-col">
-            <label htmlFor="name">Course name*</label>
-            <input
-              type="text"
-              id="name"
-              minLength={6}
-              name="name"
-              value={courseDetails.name}
-              placeholder="A catchy name here"
-              className="border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-              required
-              onChange={handleInputChange}
-            />
-          </div>
-
-          {/* Course Image  */}
-          <div className="relative w-2/3">
-            <label>Course image*</label>
+          <FormInput
+            label="Course Title"
+            required={true}
+            maxLength={50}
+            value={courseDetails.title}
+            name="title"
+            placeholder="Write the title of your course"
+            errMsg={errors.title}
+            onChange={handleInputChange}
+          />
+          <div>
+            <p>Course Thumbnail</p>
             <img
-              src={courseDetails.profileImg}
-              alt="course profile image"
-              className="rounded-lg shadow-md"
-            />
-            <span className="flex items-center justify-center gap-4 left-4 cursor-pointer p-2 border-2 mt-4 rounded-lg">
-              <label
-                htmlFor="profileImg"
-                className="cursor-pointer border-r-2 pr-2"
-              >
-                {/* <InsertPhotoIcon fontSize="small" /> */}
-                Choose Image
-              </label>
-              <input
-                type="file"
-                id="profileImg"
-                className="cursor-pointer"
-                accept="image/*"
-                onChange={(e) => {
-                  setNewProfileImg(e.target.files[0]);
-                }}
-              />
-            </span>
-          </div>
-          <div className="w-full flex flex-col">
-            <label htmlFor="price">Price*</label>
-            <input
-              type="number"
-              id="price"
-              min={1}
-              name="price"
-              value={courseDetails.price}
-              placeholder="eg. 400"
-              className="border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-              required
-              onChange={handleInputChange}
+              src={courseDetails?.thumbnail?.url}
+              alt={`${courseDetails?.title}`}
+              loading="lazy"
+              className="rounded-xl"
             />
           </div>
-          <div className="w-full flex flex-col">
-            <label htmlFor="about">About*</label>
-            <textarea
-              type="text"
-              id="about"
-              minLength={6}
-              rows={5}
-              name="about"
-              value={courseDetails.about}
-              placeholder="A catchy name here"
-              className="border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-              required
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="w-full flex flex-col">
-            <label htmlFor="alias">Alias*</label>
-            <textarea
-              type="text"
-              id="alias"
-              minLength={6}
-              rows={5}
-              name="alias"
-              value={courseDetails.alias}
-              placeholder="Write different names which user can search this course with. Separeate each name by space..."
-              className="border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-              required
-              onChange={handleInputChange}
-            />
-          </div>
+          <FormInput
+            label="New Thumbnail"
+            type="file"
+            accept="image/*"
+            name="thumbnail"
+            errMsg={errors.thumbnail}
+            onChange={(e) =>
+              setCourseDetails({
+                ...courseDetails,
+                thumbnail: e.target.files[0],
+              })
+            }
+          />
+          <FormInput
+            label="Course price"
+            required={true}
+            type="number"
+            min={10}
+            value={courseDetails.price}
+            name="price"
+            placeholder="eg. 999"
+            errMsg={errors.price}
+            onChange={handleInputChange}
+          />
+          <FormTextarea
+            label="Course Description"
+            required={true}
+            value={courseDetails.description}
+            name="description"
+            placeholder="Write about your course..."
+            errMsg={errors.description}
+            onChange={handleInputChange}
+          />
+          <FormInput
+            label="Course alias"
+            required={true}
+            value={courseDetails.alias}
+            name="alias"
+            placeholder="Write alias of your course.."
+            errMsg={errors.alias}
+            onChange={handleInputChange}
+          />
+          <FormSelect
+            defaultValue="selected"
+            label="Type"
+            name="type"
+            value={courseDetails.type}
+            required={true}
+            onChange={(e) =>
+              setCourseDetails({
+                ...courseDetails,
+                [e.target.name]: e.target.value,
+              })
+            }
+            errMsg={errors.type}
+          >
+            <FormOption disabled={true} value="selected">
+              Choose the type
+            </FormOption>
+            <FormOption value="Development">Development</FormOption>
+            <FormOption value="Language">Language</FormOption>
+            <FormOption value="DSA">DSA</FormOption>
+          </FormSelect>
+          {/* chapters  */}
           <div className="w-full flex flex-col gap-2">
             <h3 className="text-xl">Chapters*</h3>
-            {chapters?.map((chapter, idx) => {
-              return (
-                <div key={idx} className="grid grid-cols-2 gap-2">
-                  <label htmlFor="" className="col-span-1">
-                    Chapter {idx + 1}
-                  </label>
-                  <DeleteIcon
-                    fontSize="small"
-                    className="justify-self-end cursor-pointer"
-                    onClick={() =>
-                      setChapters(
-                        chapters.filter(
-                          (chapter) => chapters.indexOf(chapter) !== idx
-                        )
-                      )
-                    }
-                  />
-                  <input
-                    type="text"
-                    id="name"
-                    minLength={6}
-                    name="name"
-                    value={chapter.name}
-                    placeholder="Enter chapter name..."
-                    className="h-fit border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-                    required
-                    onChange={(e) =>
-                      handleChaptersChange(idx, e.target.name, e.target.value)
-                    }
-                  />
-                  <textarea
-                    type="text"
-                    id="alias"
-                    minLength={6}
-                    rows={3}
-                    name="content"
-                    value={chapter.content}
-                    placeholder="Write the chapter content here..."
-                    className="border-1 border-white dark:border-black px-4 py-2 rounded-lg text-sm outline-none placeholder:text-gray-600 dark:placeholder:text-gray-500 bg-white dark:bg-[var(--dark-bg-2)] shadow-md focus:border-black dark:focus:border-white"
-                    required
-                    onChange={(e) =>
-                      handleChaptersChange(idx, e.target.name, e.target.value)
-                    }
-                  />{" "}
-                </div>
-              );
-            })}
-            <button
-              className="mt-2 py-2 bg-black/30 dark:bg-white/30 rounded-lg flex gap-2 justify-center items-center font-semibold cursor-pointer hover:opacity-80"
-              onClick={(e) => {
-                e.preventDefault();
-                setChapters([...chapters, { name: "", content: "" }]);
-              }}
-            >
-              <AddIcon />
-              Add Chapter
-            </button>
-          </div>
-          <div className="flex gap-4 ml-2">
-            <button
-              type="submit"
-              className="px-6 py-2 rounded-lg hover:rounded-full bg-amber-600 cursor-pointer text-white font-semibold "
-            >
-              Update
-            </button>
-            <button
-              type="reset"
-              className="px-6 py-2 rounded-lg hover:rounded-full bg-amber-600 cursor-pointer text-white font-semibold"
-              onClick={discardChanges}
-            >
-              Discard
-            </button>
-          </div>
-        </form>
-        {/* course lectures */}
-        <div className="col-span-1 h-[calc(100vh-8rem)] overflow-auto bg-white dark:bg-[var(--dark-bg-2)] rounded-xl px-4 py-2 shadow-md relative scrollbar-thin">
-          <span className="flex justify-between items-center font-semibold">
-            <h3>Lectures({course?.lectures?.length})</h3>
-            <Link
-              to={`/instructor/my-courses/${courseId}/add-lecture`}
-              title="Add new lecture"
-              className="hover:opacity-85"
-            >
-              <AddIcon />
-            </Link>
-          </span>
-
-          {course?.lectures?.length ? (
-            <div className="flex flex-col h-[calc(100%-8rem)] w-full gap-2">
-              {course?.lectures?.map((lecture, idx) => {
+            {!chapters.length && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Note: Your course must have at least one chapter!
+              </p>
+            )}
+            <div className="flex flex-col gap-6">
+              {chapters.map((chapter, idx) => {
                 return (
-                  <Link
+                  <div
                     key={idx}
-                    className="grid grid-cols-6 dark:hover:bg-white/20 hover:bg-black/20 px-2 py-2 gap-2"
-                    style={{ transition: "background 0.2s linear" }}
+                    className="grid grid-cols-2 gap-2 relative z-0"
                   >
-                    <img
-                      src={lecture?.thumbnail?.url}
-                      alt={`lecture${idx + 1}`}
-                      className="col-span-2 aspect-video rounded"
-                    />
-                    <p className="col-span-4 text-sm">{lecture.title}</p>
-                  </Link>
+                    <FormInput
+                      label={`Chapter ${idx + 1}`}
+                      type="text"
+                      id="name"
+                      minLength={6}
+                      name="name"
+                      value={chapter.name}
+                      placeholder="Enter chapter name..."
+                      onChange={(e) =>
+                        handleChaptersChange(idx, e.target.name, e.target.value)
+                      }
+                      disabled={isLoading}
+                      errMsg={chapterErrors.chapters[idx]?.name}
+                    >
+                      <DeleteIcon
+                        fontSize="small"
+                        className="absolute cursor-pointer right-0"
+                        onClick={() =>
+                          setChapters(
+                            chapters.filter(
+                              (chapter) => chapters.indexOf(chapter) !== idx
+                            )
+                          )
+                        }
+                      />
+                    </FormInput>
+                    <FormTextarea
+                      id="alias"
+                      minLength={6}
+                      rows={3}
+                      name="content"
+                      value={chapter.content}
+                      placeholder="Write the subtopics of the chapters separated by comma (,)..."
+                      onChange={(e) =>
+                        handleChaptersChange(idx, e.target.name, e.target.value)
+                      }
+                      disabled={isLoading}
+                      className="md:mt-5"
+                      errMsg={chapterErrors.chapters[idx]?.content}
+                    ></FormTextarea>
+                  </div>
                 );
               })}
+              <AddChapterBtn
+                chapters={chapters}
+                setChapters={setChapters}
+                isLoading={isLoading}
+                chapterErrors={chapterErrors}
+                disabled={isLoading || chapterErrors.isError}
+              />
             </div>
-          ) : (
-            <div className=" flex flex-col items-center justify-center w-full text-2xl h-[calc(100vh-11rem)]">
-              NO LECTURES!
-            </div>
-          )}
+          </div>
+
+          {/*Form btns  */}
+          <div className="flex gap-4">
+            <FormButton type="submit">Update</FormButton>
+            <FormButton onClick={discardChanges}>Discard</FormButton>
+          </div>
+        </form>
+      </div>
+
+      {/* Lectures  */}
+      <div className="flex flex-col gap-2 w-full bg-light-card dark:bg-dark-subcard rounded-lg py-4 shadow-md lg:min-w-[20rem] lg:w-[20rem] lg:rounded-xl ">
+        {/* heading  */}
+        <span className="flex justify-between items-center px-4 lg:border-b-1 lg:border-gray-300 lg:dark:border-gray-600 lg:pb-2">
+          <h3 className="text-xl">Lectures</h3>
           <Link
-            to={`/instructor/my-courses/${courseId}/add-lecture`}
-            className="flex flex-col items-center bg-black/30 text-lg px-4 py-2 rounded-lg"
+            className="cursor-pointer p-1 rounded-lg hover:bg-main/10 dark:hover:bg-main/20"
+            to={`/tutor/courses/${courseId}/lectures/add-lecture`}
           >
-            CLICK TO ADD LECTURE
             <AddIcon />
           </Link>
+        </span>
+
+        {/* Lectures container  */}
+        <div
+          className={`max-h-[50vh] h-fit overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 lg:h-[calc(100vh-12rem)] ${
+            showLectures ? "" : "hidden lg:block"
+          } `}
+        >
+          {course?.lectures?.length ? (
+            course?.lectures.map((lecture, idx) => {
+              return (
+                <Link
+                  className="flex gap-1 text-left hover:bg-black/10 dark:hover:bg-white/10 py-2 px-2 sm:gap-2 sm:px-4"
+                  key={uuidv4()}
+                  to={`/tutor/courses/${courseId}/lectures/${lecture._id}/edit`}
+                >
+                  <span className="h-full">{idx + 1}. </span>
+                  <img
+                    src={lecture.thumbnail.url}
+                    alt=""
+                    loading="lazy"
+                    className="w-30 rounded-lg aspect-video lg:w-24"
+                  />
+                  <p className="text-sm">{lecture.title}</p>
+                </Link>
+              );
+            })
+          ) : (
+            <div className="flex flex-col gap-2 items-center justify-center">
+              No lecture uploaded!
+              <Link
+                className="w-fit flex gap-2 items-center justify-center flex-wrap rounded-xl p-4 bg-black/30 dark:bg-white/20 hover:bg-black/40 dark:hover:bg-white/30"
+                to={`/tutor/courses/${courseId}/lectures/add-lecture`}
+              >
+                <AddIcon />
+                Click to add Lecture!
+              </Link>
+            </div>
+          )}
         </div>
+
+        <button
+          className="text-main hover:underline w-fit mx-4 lg:hidden"
+          onClick={() => setShowLectures((prev) => !prev)}
+        >
+          {showLectures ? "Show less" : "Show more"}
+        </button>
       </div>
     </div>
   );

@@ -1,12 +1,11 @@
 import { createContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { apiInstance } from "../services/axios.config";
 export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
@@ -15,69 +14,66 @@ export const UserProvider = ({ children }) => {
   //Authentication
   async function checkAuth() {
     try {
-      setLoading(true);
-      const res = await apiInstance.get("/user/profile", {
-        withCredentials: true,
-      });
+      const res = await apiInstance.get("/users/profile");
+      setLoading(false);
       setUser(res.data.user);
-      setLoading(false);
+      setIsLoggedIn(true);
     } catch (err) {
-      console.log(err);
       setLoading(false);
+      console.log(err);
     }
   }
 
   //signup
   async function signup(userDetails) {
-    setLoading(true);
-    const res = await apiInstance.post("/user/signup", userDetails);
+    const res = await apiInstance.post("/users/signup", userDetails);
     setUser(res.data.user);
-    setLoading(false);
+    setIsLoggedIn(true);
   }
 
   //login
   async function login(userCredentials) {
-    setLoading(true);
-    const res = await apiInstance.post("/user/login", userCredentials);
-    // if (res.data.user.isTempPassword) {
-    //   return navigate("/user/update-password");
-    // }
+    const res = await apiInstance.post("/users/login", userCredentials);
     setUser(res.data.user);
-    setLoading(false);
+    setIsLoggedIn(true);
     return res;
   }
 
   //logout
   async function logout() {
-    setLoading(true);
-    const res = apiInstance.post("/user/logout");
+    const res = await apiInstance.post("/users/logout");
     setUser(null);
-    setLoading(false);
+    setIsLoggedIn(false);
   }
 
   //update profile
-  async function updateProfile(userPersonalDetails) {
-    setLoading(true);
-    const res = await apiInstance.put("/user/profile", userPersonalDetails);
+  async function updateProfile(userDetails) {
+    const res = await apiInstance.put("/users/profile", userDetails);
     setUser(res.data.user);
-    setLoading(false);
+    return res;
   }
 
   //update profile-image
-  async function updateProfileImg(formData) {
-    const res = await apiInstance.put("/user/profile/profileImg", formData);
+  async function updateProfileImage(formData) {
+    const res = await apiInstance.put("/users/profile/profile-image", formData);
     setUser(res.data.user);
+    return res;
   }
 
   //delete profile-image
-  async function deleteProfileImg() {
-    const res = await apiInstance.delete("/user/profile/profileImg");
+  async function deleteProfileImage() {
+    const res = await apiInstance.delete("/users/profile/profile-image");
     setUser(res.data.user);
+    return res;
   }
 
   //updatePassword
-  async function updatePassword(password) {
-    const res = await apiInstance.put("/user/update-password", { password });
+  async function updatePassword({ currentPassword, newPassword }) {
+    const res = await apiInstance.put("/users/update-password", {
+      currentPassword,
+      newPassword,
+    });
+    return res;
   }
 
   return (
@@ -85,14 +81,16 @@ export const UserProvider = ({ children }) => {
       value={{
         user,
         setUser,
-        loading,
         signup,
         login,
         logout,
         updateProfile,
-        updateProfileImg,
-        deleteProfileImg,
+        updateProfileImage,
+        deleteProfileImage,
         updatePassword,
+        isLoggedIn,
+        checkAuth,
+        loading,
       }}
     >
       {children}
