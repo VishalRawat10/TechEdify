@@ -4,6 +4,7 @@ const tutorSchema = new Schema({
     fullname: {
         type: String,
         required: true,
+        trim: true
     },
     email: {
         type: String,
@@ -11,15 +12,23 @@ const tutorSchema = new Schema({
     },
     personalEmail: {
         type: String,
-        required: true
+        required: true,
+        select: false,
     },
     password: {
         type: String,
         required: true,
         select: false,
     },
+    isTempPassword: {
+        type: Boolean,
+        default: true,
+        select: false,
+    },
     phone: {
         type: String,
+        select: false,
+
     },
     message: {
         type: String,
@@ -36,7 +45,8 @@ const tutorSchema = new Schema({
     isSuspended: {
         type: Boolean,
         default: false,
-        required: true
+        required: true,
+        select: false,
     }
 }, { timestamps: true });
 

@@ -9,20 +9,15 @@ const courseSchema = new Schema({
         type: String,
         required: true,
         trim: true,
+        unique: true,
+        trim: true
     },
     tutor: {
         type: Schema.Types.ObjectId,
-        ref: "Instructor",
+        ref: "Tutor",
         required: true,
     },
-    numberOfLectures: {
-        type: Number,
-        required: function () {
-            return this.courseStatus === "completed";
-        },
-        min: [1, 'A course must have at least one lecture.'],
-    },
-    profileImage: {
+    thumbnail: {
         url: {
             type: String,
             required: true,
@@ -41,7 +36,7 @@ const courseSchema = new Schema({
         type: Number,
         required: true,
     },
-    desciption: {
+    description: {
         type: String,
         required: true,
         trim: true
@@ -52,7 +47,8 @@ const courseSchema = new Schema({
     },
     lectures: {
         type: [Schema.Types.ObjectId],
-        ref: "Lecture"
+        ref: "Lecture",
+        select: false,
     },
     publishStatus: {
         enum: ["published", "unpublished"],
@@ -74,12 +70,19 @@ const courseSchema = new Schema({
             content: {
                 type: String,
                 // required: true
+                trim: true
             }
         }
     ],
     enrolledStudents: {
         type: [Schema.Types.ObjectId],
-        ref: "User"
+        ref: "User",
+        select: false,
+    },
+    type: {
+        type: String,
+        enum: ["Development", "DSA", "Language"],
+        required: true,
     }
 }, { timestamps: true });
 

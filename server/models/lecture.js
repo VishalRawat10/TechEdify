@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const lectureSchema = new Schema({
-    courseId: {
+    course: {
         type: Schema.Types.ObjectId,
         ref: "Course",
         required: true,
@@ -9,20 +9,27 @@ const lectureSchema = new Schema({
     title: {
         type: String,
         required: true,
+        trim: true
+    },
+    publicId: {
+        type: String,
+        // required: true,
+        unique: true,
     },
     lectureVideo: {
-        filename: {
-            type: String,
-            required: true,
-        },
         url: {
             type: String,
             required: true,
+        },
+        filename: {
+            type: String,
+            required: true
         }
     },
     description: {
         type: String,
         required: true,
+        trim: true
     },
     thumbnail: {
         url: {
@@ -50,7 +57,7 @@ const lectureSchema = new Schema({
             type: String,
         }
     },
-    tutorId: {
+    tutor: {
         type: Schema.Types.ObjectId,
         ref: "Tutor",
         required: true,
