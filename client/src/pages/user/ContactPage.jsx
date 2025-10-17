@@ -18,7 +18,7 @@ export default function ContactPage() {
   const [messageDetails, setMessageDetails] = useState({
     fullname: user?.fullname,
     email: user?.email,
-    message: "",
+    queryMessage: "",
   });
 
   //Input Change
@@ -33,13 +33,12 @@ export default function ContactPage() {
   const msgFormSubmitHandler = async (e) => {
     e.preventDefault();
     try {
-      const res = await apiInstance.post("/messages", messageDetails);
-      console.log(res);
-      setMessageInfo("Message sent!", false);
-      setMessageDetails({ ...messageDetails, message: "" });
+      const res = await apiInstance.post("/query-messages", messageDetails);
+      setMessageInfo("Query sent!", false);
+      setMessageDetails({ ...messageDetails, queryMessage: "" });
     } catch (err) {
       console.log(err);
-      setMessageInfo("Couldn't send message!", true);
+      setMessageInfo("Couldn't send query!", true);
     }
   };
 
@@ -121,8 +120,8 @@ export default function ContactPage() {
             </label>
             <textarea
               id="message"
-              name="message"
-              value={messageDetails.message}
+              name="queryMessage"
+              value={messageDetails.queryMessage}
               rows="5"
               minLength={10}
               placeholder="Your message here..."

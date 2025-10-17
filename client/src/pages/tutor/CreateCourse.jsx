@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect } from "react";
-
+import { useState, useContext } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
@@ -18,6 +17,8 @@ import { validateChapters, validateCourseDetails } from "../../services/utils";
 
 export default function CreateCourse() {
   const { isLoading, setIsLoading } = useContext(TutorContext);
+  const { setMessageInfo } = useContext(MessageContext);
+
   const [courseDetails, setCourseDetails] = useState({
     title: "",
     description: "",
@@ -25,47 +26,60 @@ export default function CreateCourse() {
     price: "",
     type: "selected",
   });
-  const [chapters, setChapters] = useState([]); //Course Chapters
-  const [thumbnail, setThumbnail] = useState();
+  const [chapters, setChapters] = useState([]);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [preview, setPreview] = useState(null);
 
-  const { setMessageInfo } = useContext(MessageContext);
-
-  //handleInputChnage
+  // Handle text input changes
   const handleInputChange = (e) => {
     setCourseDetails({ ...courseDetails, [e.target.name]: e.target.value });
   };
 
-  //handleChaptersChange
-  const handleChaptersChange = (index, field, value) => {
-    const updatedChapters = [...chapters];
-    updatedChapters[index][field] = value;
-    setChapters(updatedChapters);
+  // Handle thumbnail upload with live preview
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setThumbnail(file);
+    setPreview(URL.createObjectURL(file));
   };
 
-  //Submit create course form
+  // Handle chapter changes
+  const handleChaptersChange = (index, field, value) => {
+    const updated = [...chapters];
+    updated[index][field] = value;
+    setChapters(updated);
+  };
+
+  // Submit course creation
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
+    const errors = validateCourseDetails(courseDetails);
+    const chapterErrors = validateChapters(chapters);
+
+    if (errors.isError || chapterErrors.isError) {
+      setMessageInfo("Please fix form errors before submitting.", true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append("thumbnail", thumbnail);
-      formData.append("title", courseDetails.title);
-      formData.append("description", courseDetails.description);
-      formData.append("alias", courseDetails.alias);
-      formData.append("price", courseDetails.price);
-      formData.append("type", courseDetails.type);
-      formData.append("chapters", JSON.stringify(chapters)); // Important
+      if (thumbnail) formData.append("thumbnail", thumbnail);
+      Object.entries(courseDetails).forEach(([key, value]) =>
+        formData.append(key, value)
+      );
+      formData.append("chapters", JSON.stringify(chapters));
 
       const res = await apiInstance.post("/courses", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      discardChanges(e);
-      setMessageInfo(res.data.message || "Couldn't create course!", false);
+
+      setMessageInfo(res.data.message || "Course created successfully!", false);
+      discardChanges();
     } catch (err) {
       setMessageInfo(
-        err.response?.data?.message || "Unable to create course!",
+        err.response?.data?.message || "Failed to create course!",
         true
       );
     } finally {
@@ -73,9 +87,9 @@ export default function CreateCourse() {
     }
   };
 
-  //discard function
+  // Reset form
   const discardChanges = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setCourseDetails({
       title: "",
       description: "",
@@ -84,162 +98,185 @@ export default function CreateCourse() {
       type: "selected",
     });
     setChapters([]);
-    setThumbnail();
+    setThumbnail(null);
+    setPreview(null);
   };
 
   const errors = validateCourseDetails(courseDetails);
   const chapterErrors = validateChapters(chapters);
 
   return (
-    <>
-      <div className="px-4 h-[calc(100vh-4.5rem)] py-6 rounded-xl w-full overflow-y-auto scrollbar-none sm:px-10 lg:w-3/4 mx-auto">
-        <h1 className="text-3xl flex gap-2 items-center text-black dark:text-white lg:text-2xl">
-          <AddCircleOutlineIcon fontSize="large" />
-          Create Course
-        </h1>
-        <form className="flex flex-col gap-6 mt-4" onSubmit={handleFormSubmit}>
+    <div className="px-4 py-6 h-[calc(100vh-4.5rem)] rounded-xl w-full overflow-y-auto scrollbar-none sm:px-10 lg:w-3/4 mx-auto">
+      <h1 className="text-3xl flex gap-2 items-center text-black dark:text-white lg:text-2xl">
+        <AddCircleOutlineIcon fontSize="large" />
+        Create Course
+      </h1>
+
+      <form className="flex flex-col gap-6 mt-4" onSubmit={handleFormSubmit}>
+        {/* Title */}
+        <FormInput
+          label="Course Title"
+          required
+          maxLength={50}
+          value={courseDetails.title}
+          name="title"
+          placeholder="Write the title of your course"
+          errMsg={errors.title}
+          onChange={handleInputChange}
+        />
+
+        {/* Thumbnail upload + preview */}
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Course Thumbnail</p>
+          {preview && (
+            <img
+              src={preview}
+              alt="Thumbnail Preview"
+              className="rounded-xl w-full max-h-[300px] object-cover"
+              loading="lazy"
+            />
+          )}
           <FormInput
-            label="Course Title"
-            required={true}
-            maxLength={50}
-            value={courseDetails.title}
-            name="title"
-            placeholder="Write the title of your course"
-            errMsg={errors.title}
-            onChange={handleInputChange}
-          />
-          <FormInput
-            label="Course Thumbnail"
+            label="Upload Thumbnail"
             type="file"
-            required={true}
+            required
             accept="image/*"
             name="thumbnail"
             errMsg={errors.thumbnail}
-            onChange={(e) => setThumbnail(e.target.files[0])}
+            onChange={handleThumbnailChange}
           />
-          <FormInput
-            label="Course price"
-            required={true}
-            type="number"
-            min={10}
-            value={courseDetails.price}
-            name="price"
-            placeholder="eg. 999"
-            errMsg={errors.price}
-            onChange={handleInputChange}
-          />
-          <FormInput
-            label="Course Description"
-            required={true}
-            value={courseDetails.description}
-            name="description"
-            placeholder="Write about your course..."
-            errMsg={errors.description}
-            onChange={handleInputChange}
-          />
-          <FormInput
-            label="Course alias"
-            required={true}
-            value={courseDetails.alias}
-            name="alias"
-            placeholder="Write alias of your course.."
-            errMsg={errors.alias}
-            onChange={handleInputChange}
-          />
-          <FormSelect
-            defaultValue="selected"
-            label="Type"
-            name="type"
-            value={courseDetails.type}
-            required={true}
-            onChange={(e) =>
-              setCourseDetails({
-                ...courseDetails,
-                [e.target.name]: e.target.value,
-              })
-            }
-            errMsg={errors.type}
-          >
-            <FormOption disabled={true} value="selected">
-              Choose the type
-            </FormOption>
-            <FormOption value="Development">Development</FormOption>
-            <FormOption value="Language">Language</FormOption>
-            <FormOption value="DSA">DSA</FormOption>
-          </FormSelect>
-          {/* chapters  */}
-          <div className="w-full flex flex-col gap-2">
-            <h3 className="text-xl">Chapters*</h3>
-            {!chapters.length && (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                Note: Your course must have at least one chapter!
-              </p>
-            )}
-            <div className="flex flex-col gap-6">
-              {chapters.map((chapter, idx) => {
-                return (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-2 gap-2 relative z-0"
-                  >
-                    <FormInput
-                      label={`Chapter ${idx + 1}`}
-                      type="text"
-                      id="name"
-                      minLength={6}
-                      name="name"
-                      value={chapter.name}
-                      placeholder="Enter chapter name..."
-                      onChange={(e) =>
-                        handleChaptersChange(idx, e.target.name, e.target.value)
-                      }
-                      disabled={isLoading}
-                      errMsg={chapterErrors.chapters[idx]?.name}
-                    >
-                      <DeleteIcon
-                        fontSize="small"
-                        className="absolute cursor-pointer right-0"
-                        onClick={() =>
-                          setChapters(
-                            chapters.filter(
-                              (chapter) => chapters.indexOf(chapter) !== idx
-                            )
-                          )
-                        }
-                      />
-                    </FormInput>
-                    <FormTextarea
-                      id="alias"
-                      minLength={6}
-                      rows={3}
-                      name="content"
-                      value={chapter.content}
-                      placeholder="Write the subtopics of the chapters separated by comma (,)..."
-                      onChange={(e) =>
-                        handleChaptersChange(idx, e.target.name, e.target.value)
-                      }
-                      disabled={isLoading}
-                      className="md:mt-5"
-                      errMsg={chapterErrors.chapters[idx]?.content}
-                    ></FormTextarea>
-                  </div>
-                );
-              })}
-              <AddChapterBtn
-                chapters={chapters}
-                setChapters={setChapters}
-                isLoading={isLoading}
-                chapterErrors={chapterErrors}
-                disabled={isLoading || chapterErrors.isError}
-              />
-            </div>
+        </div>
+
+        {/* Price */}
+        <FormInput
+          label="Course Price"
+          required
+          type="number"
+          min={10}
+          value={courseDetails.price}
+          name="price"
+          placeholder="e.g. 999"
+          errMsg={errors.price}
+          onChange={handleInputChange}
+        />
+
+        {/* Description */}
+        <FormTextarea
+          label="Course Description"
+          required
+          value={courseDetails.description}
+          name="description"
+          placeholder="Write about your course..."
+          errMsg={errors.description}
+          onChange={handleInputChange}
+        />
+
+        {/* Alias */}
+        <FormInput
+          label="Course Alias"
+          required
+          value={courseDetails.alias}
+          name="alias"
+          placeholder="Enter a unique alias for your course"
+          errMsg={errors.alias}
+          onChange={handleInputChange}
+        />
+
+        {/* Type */}
+        <FormSelect
+          defaultValue="selected"
+          label="Course Category"
+          name="type"
+          value={courseDetails.type}
+          required
+          onChange={(e) =>
+            setCourseDetails({
+              ...courseDetails,
+              [e.target.name]: e.target.value,
+            })
+          }
+          errMsg={errors.type}
+        >
+          <FormOption disabled value="selected">
+            Choose the category
+          </FormOption>
+          <FormOption value="Development">Development</FormOption>
+          <FormOption value="Language">Language</FormOption>
+          <FormOption value="DSA">DSA</FormOption>
+        </FormSelect>
+
+        {/* Chapters */}
+        <div className="w-full flex flex-col gap-2">
+          <h3 className="text-xl font-semibold">Chapters*</h3>
+          {!chapters.length && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Note: Your course must have at least one chapter!
+            </p>
+          )}
+
+          <div className="flex flex-col gap-6">
+            {chapters.map((chapter, idx) => (
+              <div
+                key={idx}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-2 relative z-0"
+              >
+                <FormInput
+                  label={`Chapter ${idx + 1}`}
+                  type="text"
+                  name="name"
+                  minLength={6}
+                  value={chapter.name}
+                  placeholder="Enter chapter name..."
+                  onChange={(e) =>
+                    handleChaptersChange(idx, e.target.name, e.target.value)
+                  }
+                  disabled={isLoading}
+                  errMsg={chapterErrors.chapters[idx]?.name}
+                >
+                  <DeleteIcon
+                    fontSize="small"
+                    className="absolute right-2 top-2 cursor-pointer text-red-500 hover:text-red-600"
+                    onClick={() =>
+                      setChapters((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                  />
+                </FormInput>
+
+                <FormTextarea
+                  name="content"
+                  minLength={6}
+                  rows={3}
+                  value={chapter.content}
+                  placeholder="Write subtopics separated by commas (,)..."
+                  onChange={(e) =>
+                    handleChaptersChange(idx, e.target.name, e.target.value)
+                  }
+                  disabled={isLoading}
+                  errMsg={chapterErrors.chapters[idx]?.content}
+                />
+              </div>
+            ))}
+
+            <AddChapterBtn
+              chapters={chapters}
+              setChapters={setChapters}
+              isLoading={isLoading}
+              chapterErrors={chapterErrors}
+              disabled={isLoading || chapterErrors.isError}
+            />
           </div>
-          <div className="flex gap-4">
-            <FormButton type="submit">Create</FormButton>
-            <FormButton onClick={discardChanges}>Discard</FormButton>
-          </div>
-        </form>
-      </div>
-    </>
+        </div>
+
+        {/* Form buttons */}
+        <div className="flex gap-4">
+          <FormButton type="submit" disabled={isLoading}>
+            Create
+          </FormButton>
+          <FormButton onClick={discardChanges} disabled={isLoading}>
+            Discard
+          </FormButton>
+        </div>
+      </form>
+    </div>
   );
 }

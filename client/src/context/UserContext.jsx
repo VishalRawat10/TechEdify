@@ -1,15 +1,66 @@
 import { createContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 import { apiInstance } from "../services/axios.config";
+
 export const UserContext = createContext();
+
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState();
+  const [unreadMessages, setUnreadMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState(null);
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        const res = await apiInstance.get("/messages/unread");
+        setUnreadMessages(res.data.unreadMessages);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (user) {
+      const newSocket = io(import.meta.env.VITE_SERVER_URL);
+      newSocket.on("connect", () => {
+        console.log("Socket is conneted: ", newSocket.id);
+        newSocket.emit("connect-user", user._id);
+      });
+      setSocket(newSocket);
+
+      fetchUnreadMessages();
+
+      newSocket.on("new-message", (newMsg) => {
+        setNewMessage(newMsg);
+        setUnreadMessages((prev) => [...prev, newMsg]);
+      });
+
+      newSocket.on("mark-read", (message) => {
+        setNewMessage(null);
+        setUnreadMessages((prev) =>
+          prev.filter((msg) => {
+            if (msg._id === message._id) {
+              return false;
+            }
+            return true;
+          })
+        );
+      });
+
+      return () => {
+        newSocket.disconnect();
+
+        setSocket(null);
+      };
+    }
+  }, [user]);
 
   //Authentication
   async function checkAuth() {
@@ -44,6 +95,10 @@ export const UserProvider = ({ children }) => {
     const res = await apiInstance.post("/users/logout");
     setUser(null);
     setIsLoggedIn(false);
+    socket.on("disconnect", () => {
+      console.log("Socket is disconnected : ", socket.id);
+      setSocket();
+    });
   }
 
   //update profile
@@ -76,6 +131,11 @@ export const UserProvider = ({ children }) => {
     return res;
   }
 
+  //mark as read in new message notification
+  const markRead = () => {
+    socket.emit("mark-read", { messageId: newMessage._id, memberId: user._id });
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -91,6 +151,11 @@ export const UserProvider = ({ children }) => {
         isLoggedIn,
         checkAuth,
         loading,
+        socket,
+        unreadMessages,
+        newMessage,
+        setNewMessage,
+        markRead,
       }}
     >
       {children}

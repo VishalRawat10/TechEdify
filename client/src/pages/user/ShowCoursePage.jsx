@@ -1,10 +1,8 @@
 import { useState, useEffect, useContext } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import Rating from "@mui/material/Rating";
+import { useNavigate, useParams } from "react-router-dom";
 
 import EnrollButton from "../../components/UI/EnrollButton";
 import Loader from "../../components/Loader";
-import ReviewCard from "../../components/UI/ReviewCard";
 import { apiInstance } from "../../services/axios.config";
 import { UserContext } from "../../context/UserContext";
 import StartLearningBtn from "../../components/UI/StartLearningBtn";
@@ -17,7 +15,7 @@ export default function ShowCoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState();
   const { user } = useContext(UserContext);
-  const isEnrolled = user?.enrolledCourses.includes(id);
+  const isEnrolled = user?.enrolledCourses.some((course) => course._id === id);
 
   useEffect(() => {
     const getCourse = async () => {
@@ -132,38 +130,6 @@ export default function ShowCoursePage() {
             <EnrollButton courseId={id} setIsLoading={setIsLoading} />
           </div>
         )}
-
-        {/* Reviews on course  */}
-        {course?.reviews?.length != 0 && (
-          <div className="w-full mb-4 mt-4">
-            <p className="text-xl font-semibold">Reviews: </p>
-            <ul className="show-course-reviews-container max-w-full overflow-x-auto flex gap-4 pb-4">
-              {course?.reviews.map((review, idx) => {
-                return (
-                  <li key={idx}>
-                    <ReviewCard review={review} />
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
-        {/* Add reviews to course  */}
-        {/* {
-          <div className={isEnrolled ? "" : "hidden"}>
-            <h3>Add your review : </h3>
-            <form>
-              <label htmlFor="rating">Rating</label>
-              <Rating
-                name="rating"
-                size="large"
-                id="rating"
-                className="dark:bg-white"
-              />
-            </form>
-          </div>
-        } */}
       </main>
     </>
   );

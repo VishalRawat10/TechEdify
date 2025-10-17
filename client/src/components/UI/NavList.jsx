@@ -1,24 +1,28 @@
 import { useContext } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+import ChatIcon from "@mui/icons-material/Chat";
 
 export default function NavList() {
-  const { user } = useContext(UserContext);
+  const { user, unreadMessages } = useContext(UserContext);
+
   return (
     <>
-      {user?.email ? (
-        <Link className=" relative" title="notifications">
-          <span className=" absolute  right-0.5 h-3 w-3 flex justify-center items-center dark:bg-dark bg-light rounded-full px-0.2 py-0.2">
-            <span className="bg-dark dark:bg-light w-2 h-2 rounded-full"></span>
-          </span>
-          <NotificationsIcon sx={{ fontSize: "1.6rem" }} />
+      {user ? (
+        <Link className=" relative" title="discussions" to="/discussions">
+          <ChatIcon sx={{ fontSize: "1.4rem" }} />
+          {unreadMessages.length != 0 && (
+            <span className="absolute text-[10px] bg-[#eb3b50] text-white py-0 p-1 rounded-full left-[50%] -top-1 border-[2px] dark:border-black">
+              {unreadMessages.length}
+            </span>
+          )}
         </Link>
       ) : (
         <NavLink to="/" className={"nav-link "}>
           Home
         </NavLink>
       )}
+
       <NavLink to="/courses" className={"nav-link"}>
         Courses
       </NavLink>

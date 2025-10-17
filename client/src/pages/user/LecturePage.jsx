@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -8,7 +8,6 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { apiInstance } from "../../services/axios.config";
 import { MessageContext } from "../../context/MessageContext";
 import Loader from "../../components/Loader";
-import useWatchDuration from "../../hooks/UserWatchDuration";
 
 export default function LecturePage() {
   const { id } = useParams();
@@ -18,13 +17,6 @@ export default function LecturePage() {
   const [course, setCourse] = useState();
   const [currLecture, setCurrLecture] = useState();
   const [readMore, setReadMore] = useState(false);
-  const {
-    handleLecturePause,
-    handleLectureEnd,
-    handleLecturePlay,
-    handleLoadedLectureMetaData,
-  } = useWatchDuration();
-  // const [lectureUrl, setLectureUrl] = useState();
   const navigate = useNavigate();
 
   const getLectures = async () => {
@@ -33,40 +25,23 @@ export default function LecturePage() {
       const res = await apiInstance.get(`/courses/${id}/lectures`);
       if (!res.data.lectures.length) {
         setMessageInfo("Course does not have any lecture!", true);
-        navigate("/courses");
+        navigate(`/courses/${id}`);
       }
       setLectures(res.data.lectures);
       setCurrLecture(res.data.lectures[0]);
       setCourse(res.data.course);
-      setIsLoading(false);
     } catch (err) {
       console.log(err);
       setMessageInfo(err.response.data.message, true);
-      setIsLoading(false);
       navigate(-1);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     getLectures();
   }, []);
-
-  //for signed url--- currently not working
-  // useEffect(() => {
-  //   const getLectureUrl = async () => {
-  //     try {
-  //       const res = await apiInstance.get(
-  //         `/courses/${id}/lectures/${currLecture?._id}/lecture-url`
-  //       );
-  //       setLectureUrl(res.data.lectureUrl);
-  //     } catch (err) {
-  //       setMessageInfo(err.response.data.message, true);
-  //     }
-  //   };
-  //   if (currLecture) {
-  //     getLectureUrl();
-  //   }
-  // }, [currLecture]);
 
   return (
     <>
@@ -88,10 +63,6 @@ export default function LecturePage() {
               controlsList="nodownload"
               disablePictureInPicture
               controls
-              onLoadedMetadata={handleLoadedLectureMetaData}
-              onPlay={handleLecturePlay}
-              onPause={handleLecturePause}
-              onEnded={handleLectureEnd}
             ></video>
           </div>
 

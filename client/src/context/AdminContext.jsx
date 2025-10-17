@@ -7,7 +7,7 @@ export const AdminProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const getAdmin = async () => {
-    return await apiInstance.get("/admin/verify");
+    return await apiInstance.get("/admin/profile");
   };
 
   useEffect(() => {

@@ -12,14 +12,9 @@ const CourseCard = memo(({ course, isEnrolled }) => {
         />
 
         <div className="mt-1 flex flex-col gap-2">
-          <h3 className="text-light-primay dark:text-dark-primary">
+          <h3 className="text-light-primay dark:text-dark-primary font-semibold">
             {course.title}
           </h3>
-          {/* <p className="text-sm text-justify text-light-secondary dark:text-dark-secondary">
-            {course.description.length < 90
-              ? course.description
-              : course.description.slice(0, 87) + "..."}
-          </p> */}
           <hr className="border-light-secondary/60" />
           <p className="text-light-primary dark:text-dark-primary">
             Price : &#8377;{course.price}

@@ -1,5 +1,6 @@
 import { memo } from "react";
 import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
 export const FormInput = memo(
   ({
     value,
@@ -99,7 +100,7 @@ export const FormTextarea = memo(
   }) => {
     return (
       <div
-        className={`flex flex-col col-span-2 md:col-span-1 gap-1 ${className}`}
+        className={`flex flex-col col-span-2 w-full md:col-span-1 gap-1 ${className}`}
       >
         <label
           htmlFor={id || name}
@@ -260,5 +261,34 @@ export const AddChapterBtn = ({
       <AddIcon />
       Add Chapter
     </button>
+  );
+};
+
+export const SearchBox = ({
+  name = "search",
+  label,
+  value,
+  onChange,
+  placeholder,
+  className,
+}) => {
+  return (
+    <div
+      className={`flex gap-2 items-center rounded-lg border-1 w-full px-2 py-1 text-sm ${className}`}
+    >
+      <label htmlFor={name}>
+        <SearchIcon fontSize="small" />
+      </label>
+      <input
+        type="search"
+        id={name}
+        className="focus:outline-none w-full"
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-label="S"
+      />
+    </div>
   );
 };

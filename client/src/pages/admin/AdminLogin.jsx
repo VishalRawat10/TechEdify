@@ -1,90 +1,131 @@
 import { useContext, useState } from "react";
-
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiInstance } from "../../services/axios.config";
 import { AdminContext } from "../../context/AdminContext";
 import { MessageContext } from "../../context/MessageContext";
-import { useNavigate } from "react-router-dom";
-import Loader from "../../components/Loader";
+
+import {
+  Visibility,
+  VisibilityOff,
+  AdminPanelSettings,
+} from "@mui/icons-material";
+import Message from "../../components/Message";
 
 export default function AdminLogin() {
-  const [adminCredentials, setAdminCredentials] = useState({
+  const { setAdmin } = useContext(AdminContext);
+  const { setMessageInfo } = useContext(MessageContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
     adminEmail: "",
     adminPassword: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const { setAdmin, setLoading } = useContext(AdminContext);
-  const { setMessageInfo } = useContext(MessageContext);
-  const navigate = useNavigate();
 
-  const handleInputChange = (e) => {
-    setAdminCredentials({
-      ...adminCredentials,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setLoading(true);
+    setIsSubmitting(true);
+
     try {
-      const res = await apiInstance.post("/admin/login", adminCredentials);
-      setLoading(false);
-      console.log(res.data.admin);
+      const res = await apiInstance.post("/admin/login", formData);
       setAdmin(res.data.admin);
-      setMessageInfo(res.data.message, false);
-      navigate("/admin/dashboard");
+      setMessageInfo("Logged in as admin!", false);
+      navigate(searchParams.get("redirectTo") || "/admin/dashboard");
     } catch (err) {
-      console.log(err);
-      setLoading(false);
+      console.log("Login error: ", err);
       setMessageInfo(err.response.data.message, true);
+      setFormData({ adminEmail: "", adminPassword: "" });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-  return (
-    <>
-      {isLoading ? <Loader /> : ""}
-      <main className="w-screen px-4 flex items-center justify-center h-[calc(100vh-var(--header-h))]">
-        <form
-          className="w-full rounded-xl bg-white dark:bg-[var(--dark-bg-2)] flex flex-col gap-4 items-center p-8  sm:w-[25rem] shadow-xl dark:shadow-gray-800"
-          onSubmit={(e) => handleFormSubmit(e)}
-        >
-          <h1 className="text-3xl font-semibold ">Admin Login</h1>
 
-          <div className="flex flex-col gap-1 text-sm w-full">
-            <label htmlFor="email" className="font-semibold">
-              Email*
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 text-black">
+      <Message />
+      <div className="bg-white shadow-xl rounded-2xl w-full max-w-md p-8">
+        {/* Logo / Icon */}
+        <div className="flex justify-center mb-6">
+          <AdminPanelSettings sx={{ fontSize: 50, color: "#2563eb" }} />
+        </div>
+
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Admin Login
+        </h2>
+        <p className="text-center text-gray-500 mb-8">
+          Sign in to access your admin dashboard
+        </p>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {/* Email Field */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Email
             </label>
             <input
               type="email"
               name="adminEmail"
-              id="email"
-              className="w-full px-4 py-3 border-gray-400 focus:border-black dark:focus:border-white border-1 rounded-xl focus:outline-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              placeholder="eg. abc@domain.com"
+              placeholder="admin@example.com"
+              value={formData.adminEmail}
+              onChange={handleChange}
               required
-              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
-          <div className="flex flex-col gap-1 text-sm w-full">
-            <label htmlFor="password" className="font-semibold">
-              Password*
+
+          {/* Password Field */}
+          <div className="relative">
+            <label className="block text-gray-700 font-medium mb-1">
+              Password
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="adminPassword"
-              id="password"
-              className="w-full px-4 py-3 border-gray-400 focus:border-black dark:focus:border-white border-1 rounded-xl focus:outline-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              placeholder="*********"
+              placeholder="••••••••"
+              value={formData.adminPassword}
+              onChange={handleChange}
               required
-              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-[38px] right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </button>
           </div>
-          <button className="w-full bg-[var(--base)] text-white font-semibold py-2 rounded-lg cursor-pointer hover:opacity-90">
-            Login
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-3 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition cursor-pointer ${
+              isSubmitting && "opacity-70 cursor-not-allowed"
+            }`}
+          >
+            {isSubmitting ? "Signing In..." : "Login"}
           </button>
         </form>
-      </main>
-    </>
+
+        {/* Optional Footer */}
+        <p className="text-center text-gray-500 text-sm mt-6">
+          Not an admin?
+          <span
+            onClick={() => navigate("/login")}
+            className="text-blue-600 hover:underline cursor-pointer"
+          >
+            Go to user login
+          </span>
+        </p>
+      </div>
+    </div>
   );
 }
