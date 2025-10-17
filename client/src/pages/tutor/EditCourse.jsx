@@ -1,9 +1,10 @@
 import { useEffect, useState, useContext } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+
 import {
   FormButton,
   FormInput,
@@ -22,293 +23,309 @@ export default function EditCourse() {
   const { courseId } = useParams();
   const { setIsLoading, isLoading } = useContext(TutorContext);
   const { setMessageInfo } = useContext(MessageContext);
-  const [course, setCourse] = useState();
-  const [courseDetails, setCourseDetails] = useState({});
-  const [chapters, setChapters] = useState([]); //Course Chapters
-  const [showLectures, setShowLectures] = useState(false);
 
+  const [course, setCourse] = useState(null);
+  const [courseDetails, setCourseDetails] = useState({});
+  const [chapters, setChapters] = useState([]);
+  const [showLectures, setShowLectures] = useState(false);
+  const [preview, setPreview] = useState("");
+
+  // Fetch course details
   useEffect(() => {
     const getCourse = async () => {
       setIsLoading(true);
       try {
         const res = await apiInstance.get(`/tutors/courses/${courseId}`);
-        setIsLoading(false);
-        setCourse(res.data.course);
-        setCourseDetails(res.data.course);
-        setChapters(res.data.course.chapters);
+        const courseData = res.data.course;
+        setCourse(courseData);
+        setCourseDetails(courseData);
+        setChapters(courseData.chapters || []);
+        setPreview(courseData.thumbnail?.url || "");
       } catch (err) {
+        setMessageInfo(
+          err.response?.data?.message || "Failed to fetch course details!",
+          true
+        );
+      } finally {
         setIsLoading(false);
-        setMessageInfo(err.response.data.message, true);
       }
     };
     getCourse();
   }, []);
 
-  //input chnage handler
+  // Handle input changes
   const handleInputChange = (e) => {
     setCourseDetails({ ...courseDetails, [e.target.name]: e.target.value });
   };
 
-  //formSubmitHandler
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      if (courseDetails.thumbnail) {
-        formData.append("thumbnail", courseDetails.thumbnail);
-      }
-      formData.append("title", courseDetails.title);
-      formData.append("description", courseDetails.description);
-      formData.append("alias", courseDetails.alias);
-      formData.append("price", courseDetails.price);
-      formData.append("type", courseDetails.type);
-      formData.append("chapters", JSON.stringify(chapters)); // Important
-
-      const res = await apiInstance.put(`/courses/${courseId}`, formData);
-      setCourseDetails(res.data.course);
-      setMessageInfo(res.data.message, false);
-    } catch (err) {
-      setMessageInfo(err.response.data.message, true);
-    } finally {
-      setIsLoading(false);
-    }
+  // Handle file selection with live preview
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCourseDetails({ ...courseDetails, thumbnail: file });
+    setPreview(URL.createObjectURL(file));
   };
 
-  //handleChaptersChange
+  // Handle chapter input changes
   const handleChaptersChange = (index, field, value) => {
-    const updatedChapters = [...chapters];
-    updatedChapters[index][field] = value;
-    setChapters(updatedChapters);
+    const updated = [...chapters];
+    updated[index][field] = value;
+    setChapters(updated);
   };
 
-  //discard function
+  // Discard changes
   const discardChanges = (e) => {
     e.preventDefault();
     setCourseDetails(course);
-    setChapters(course?.chapters);
+    setChapters(course?.chapters || []);
+    setPreview(course?.thumbnail?.url || "");
+  };
+
+  // Submit handler
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const errors = validateCourseDetails(courseDetails);
+    const chapterErrors = validateChapters(chapters);
+    if (errors.isError || chapterErrors.isError) {
+      setMessageInfo("Please fix form errors before submitting.", true);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      Object.entries(courseDetails).forEach(([key, value]) => {
+        if (key === "thumbnail" && value instanceof File) {
+          formData.append("thumbnail", value);
+        } else if (typeof value !== "object") {
+          formData.append(key, value);
+        }
+      });
+      formData.append("chapters", JSON.stringify(chapters));
+
+      const res = await apiInstance.put(`/courses/${courseId}`, formData);
+      setCourseDetails(res.data.course);
+      setMessageInfo("Course updated successfully!", false);
+    } catch (err) {
+      setMessageInfo(
+        err.response?.data?.message || "Failed to update course!",
+        true
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const errors = validateCourseDetails(courseDetails);
   const chapterErrors = validateChapters(chapters);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-5rem)] py-4 px-4 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 gap-4 sm:px-10 lg:flex-row lg:px-2 lg:overflow-hidden lg:gap-0">
-      {/* Edit course form  */}
-      <div className="rounded-xl  w-full mx-auto lg:px-6 xl:w-[60rem] ">
-        <h1 className="text-xl flex gap-2 items-center text-black dark:text-white sm:text-2xl">
+    <div className="flex flex-col h-[calc(100dvh-5rem)] py-4 px-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 gap-4 sm:px-10 lg:flex-row lg:px-2 lg:gap-0">
+      {/* Edit Course Form */}
+      <div className="rounded-xl w-full mx-auto lg:px-6 xl:w-[60rem]">
+        <h1 className="text-xl flex gap-2 items-center text-main font-semibold sm:text-2xl">
           <EditIcon />
-          {course?.title}
+          Edit Course — {course?.title}
         </h1>
+
         <form
           className="flex flex-col gap-6 mt-4 h-fit overflow-y-auto scrollbar-none lg:h-[calc(100vh-9rem)]"
           onSubmit={handleFormSubmit}
         >
           <FormInput
             label="Course Title"
-            required={true}
+            required
             maxLength={50}
-            value={courseDetails.title}
+            value={courseDetails.title || ""}
             name="title"
-            placeholder="Write the title of your course"
+            placeholder="Enter course title"
             errMsg={errors.title}
             onChange={handleInputChange}
+            disabled={isLoading}
           />
-          <div>
-            <p>Course Thumbnail</p>
-            <img
-              src={courseDetails?.thumbnail?.url}
-              alt={`${courseDetails?.title}`}
-              loading="lazy"
-              className="rounded-xl"
+
+          <div className="flex flex-col gap-2">
+            <p className="font-medium">Course Thumbnail</p>
+            {preview && (
+              <img
+                src={preview}
+                alt="Course Thumbnail"
+                className="rounded-xl w-full max-h-[300px] object-cover"
+                loading="lazy"
+              />
+            )}
+            <FormInput
+              label="Upload New Thumbnail"
+              type="file"
+              accept="image/*"
+              name="thumbnail"
+              onChange={handleThumbnailChange}
+              disabled={isLoading}
             />
           </div>
+
           <FormInput
-            label="New Thumbnail"
-            type="file"
-            accept="image/*"
-            name="thumbnail"
-            errMsg={errors.thumbnail}
-            onChange={(e) =>
-              setCourseDetails({
-                ...courseDetails,
-                thumbnail: e.target.files[0],
-              })
-            }
-          />
-          <FormInput
-            label="Course price"
-            required={true}
+            label="Course Price"
+            required
             type="number"
             min={10}
-            value={courseDetails.price}
+            value={courseDetails.price || ""}
             name="price"
-            placeholder="eg. 999"
+            placeholder="e.g. 999"
             errMsg={errors.price}
             onChange={handleInputChange}
+            disabled={isLoading}
           />
+
           <FormTextarea
             label="Course Description"
-            required={true}
-            value={courseDetails.description}
+            required
+            value={courseDetails.description || ""}
             name="description"
             placeholder="Write about your course..."
             errMsg={errors.description}
             onChange={handleInputChange}
+            disabled={isLoading}
           />
+
           <FormInput
-            label="Course alias"
-            required={true}
-            value={courseDetails.alias}
+            label="Course Alias"
+            required
+            value={courseDetails.alias || ""}
             name="alias"
-            placeholder="Write alias of your course.."
+            placeholder="e.g. web-development"
             errMsg={errors.alias}
             onChange={handleInputChange}
+            disabled={isLoading}
           />
+
           <FormSelect
-            defaultValue="selected"
-            label="Type"
+            label="Category"
             name="type"
-            value={courseDetails.type}
-            required={true}
-            onChange={(e) =>
-              setCourseDetails({
-                ...courseDetails,
-                [e.target.name]: e.target.value,
-              })
-            }
+            value={courseDetails.type || ""}
+            required
+            onChange={handleInputChange}
             errMsg={errors.type}
+            disabled={isLoading}
           >
-            <FormOption disabled={true} value="selected">
-              Choose the type
+            <FormOption disabled value="">
+              Choose category
             </FormOption>
             <FormOption value="Development">Development</FormOption>
             <FormOption value="Language">Language</FormOption>
             <FormOption value="DSA">DSA</FormOption>
           </FormSelect>
-          {/* chapters  */}
+
+          {/* Chapters Section */}
           <div className="w-full flex flex-col gap-2">
-            <h3 className="text-xl">Chapters*</h3>
+            <h3 className="text-xl font-semibold">Chapters*</h3>
             {!chapters.length && (
               <p className="text-sm text-red-600 dark:text-red-400">
-                Note: Your course must have at least one chapter!
+                Your course must have at least one chapter.
               </p>
             )}
+
             <div className="flex flex-col gap-6">
-              {chapters.map((chapter, idx) => {
-                return (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-2 gap-2 relative z-0"
+              {chapters.map((chapter, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-2 relative"
+                >
+                  <FormInput
+                    label={`Chapter ${idx + 1}`}
+                    name="name"
+                    minLength={3}
+                    value={chapter.name || ""}
+                    placeholder="Enter chapter name..."
+                    onChange={(e) =>
+                      handleChaptersChange(idx, e.target.name, e.target.value)
+                    }
+                    errMsg={chapterErrors.chapters[idx]?.name}
                   >
-                    <FormInput
-                      label={`Chapter ${idx + 1}`}
-                      type="text"
-                      id="name"
-                      minLength={6}
-                      name="name"
-                      value={chapter.name}
-                      placeholder="Enter chapter name..."
-                      onChange={(e) =>
-                        handleChaptersChange(idx, e.target.name, e.target.value)
+                    <DeleteIcon
+                      fontSize="small"
+                      className="absolute right-2 top-2 cursor-pointer text-red-500 hover:text-red-600"
+                      onClick={() =>
+                        setChapters((prev) => prev.filter((_, i) => i !== idx))
                       }
-                      disabled={isLoading}
-                      errMsg={chapterErrors.chapters[idx]?.name}
-                    >
-                      <DeleteIcon
-                        fontSize="small"
-                        className="absolute cursor-pointer right-0"
-                        onClick={() =>
-                          setChapters(
-                            chapters.filter(
-                              (chapter) => chapters.indexOf(chapter) !== idx
-                            )
-                          )
-                        }
-                      />
-                    </FormInput>
-                    <FormTextarea
-                      id="alias"
-                      minLength={6}
-                      rows={3}
-                      name="content"
-                      value={chapter.content}
-                      placeholder="Write the subtopics of the chapters separated by comma (,)..."
-                      onChange={(e) =>
-                        handleChaptersChange(idx, e.target.name, e.target.value)
-                      }
-                      disabled={isLoading}
-                      className="md:mt-5"
-                      errMsg={chapterErrors.chapters[idx]?.content}
-                    ></FormTextarea>
-                  </div>
-                );
-              })}
+                    />
+                  </FormInput>
+                  <FormTextarea
+                    name="content"
+                    minLength={6}
+                    rows={3}
+                    value={chapter.content || ""}
+                    placeholder="Write subtopics separated by commas (,)..."
+                    onChange={(e) =>
+                      handleChaptersChange(idx, e.target.name, e.target.value)
+                    }
+                    errMsg={chapterErrors.chapters[idx]?.content}
+                  />
+                </div>
+              ))}
+
               <AddChapterBtn
                 chapters={chapters}
                 setChapters={setChapters}
                 isLoading={isLoading}
                 chapterErrors={chapterErrors}
-                disabled={isLoading || chapterErrors.isError}
               />
             </div>
           </div>
 
-          {/*Form btns  */}
           <div className="flex gap-4">
-            <FormButton type="submit">Update</FormButton>
-            <FormButton onClick={discardChanges}>Discard</FormButton>
+            <FormButton type="submit" disabled={isLoading}>
+              Update
+            </FormButton>
+            <FormButton onClick={discardChanges} disabled={isLoading}>
+              Discard
+            </FormButton>
           </div>
         </form>
       </div>
 
-      {/* Lectures  */}
-      <div className="flex flex-col gap-2 w-full bg-light-card dark:bg-dark-subcard rounded-lg py-4 shadow-md lg:min-w-[20rem] lg:w-[20rem] lg:rounded-xl ">
-        {/* heading  */}
-        <span className="flex justify-between items-center px-4 lg:border-b-1 lg:border-gray-300 lg:dark:border-gray-600 lg:pb-2">
-          <h3 className="text-xl">Lectures</h3>
+      {/* Lectures Sidebar */}
+      <aside className="flex flex-col gap-2 w-full bg-light-card dark:bg-dark-subcard rounded-lg py-4 shadow-md lg:min-w-[20rem] lg:w-[20rem] lg:rounded-xl">
+        <header className="flex justify-between items-center px-4 border-b border-gray-300 dark:border-gray-600 pb-2">
+          <h3 className="text-xl font-semibold">Lectures</h3>
           <Link
             className="cursor-pointer p-1 rounded-lg hover:bg-main/10 dark:hover:bg-main/20"
             to={`/tutor/courses/${courseId}/lectures/add-lecture`}
           >
             <AddIcon />
           </Link>
-        </span>
+        </header>
 
-        {/* Lectures container  */}
         <div
-          className={`max-h-[50vh] h-fit overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 lg:h-[calc(100vh-12rem)] ${
+          className={`max-h-[50vh] overflow-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 lg:h-[calc(100vh-12rem)] ${
             showLectures ? "" : "hidden lg:block"
-          } `}
+          }`}
         >
           {course?.lectures?.length ? (
-            course?.lectures.map((lecture, idx) => {
-              return (
-                <Link
-                  className="flex gap-1 text-left hover:bg-black/10 dark:hover:bg-white/10 py-2 px-2 sm:gap-2 sm:px-4"
-                  key={uuidv4()}
-                  to={`/tutor/courses/${courseId}/lectures/${lecture._id}/edit`}
-                >
-                  <span className="h-full">{idx + 1}. </span>
-                  <img
-                    src={lecture.thumbnail.url}
-                    alt=""
-                    loading="lazy"
-                    className="w-30 rounded-lg aspect-video lg:w-24"
-                  />
-                  <p className="text-sm">{lecture.title}</p>
-                </Link>
-              );
-            })
-          ) : (
-            <div className="flex flex-col gap-2 items-center justify-center">
-              No lecture uploaded!
+            course.lectures.map((lecture, idx) => (
               <Link
-                className="w-fit flex gap-2 items-center justify-center flex-wrap rounded-xl p-4 bg-black/30 dark:bg-white/20 hover:bg-black/40 dark:hover:bg-white/30"
+                key={uuidv4()}
+                className="flex gap-2 text-left hover:bg-black/10 dark:hover:bg-white/10 py-2 px-3"
+                to={`/tutor/courses/${courseId}/lectures?lecture=${idx + 1}`}
+              >
+                <span>{idx + 1}.</span>
+                <img
+                  src={lecture.thumbnail.url}
+                  alt="Lecture thumbnail"
+                  className="w-24 rounded-md aspect-video object-cover"
+                />
+                <p className="text-sm truncate">{lecture.title}</p>
+              </Link>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-sm">
+              No lectures yet.
+              <Link
+                className="flex items-center gap-2 mt-2 bg-black/30 dark:bg-white/20 hover:bg-black/40 dark:hover:bg-white/30 px-4 py-2 rounded-lg"
                 to={`/tutor/courses/${courseId}/lectures/add-lecture`}
               >
-                <AddIcon />
-                Click to add Lecture!
+                <AddIcon /> Add Lecture
               </Link>
             </div>
           )}
@@ -320,7 +337,7 @@ export default function EditCourse() {
         >
           {showLectures ? "Show less" : "Show more"}
         </button>
-      </div>
+      </aside>
     </div>
   );
 }

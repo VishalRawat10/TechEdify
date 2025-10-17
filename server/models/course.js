@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const User = require("../models/user");
-const Tutor = require("./tutor");
 
 
 const courseSchema = new Schema({
@@ -41,19 +39,14 @@ const courseSchema = new Schema({
         required: true,
         trim: true
     },
-    reviews: {
-        type: [Schema.Types.ObjectId],
-        ref: "Review"
-    },
     lectures: {
         type: [Schema.Types.ObjectId],
         ref: "Lecture",
         select: false,
     },
-    publishStatus: {
-        enum: ["published", "unpublished"],
-        default: "unpublished",
-        type: String
+    isPublished: {
+        type: Boolean,
+        default: false,
     },
     courseStatus: {
         enum: ["ongoing", "completed", "upcoming"],
@@ -85,15 +78,5 @@ const courseSchema = new Schema({
         required: true,
     }
 }, { timestamps: true });
-
-courseSchema.post("findOneAndDelete", async (course) => {
-    course.enrolledStudents?.forEach(async (studentId) => {
-        const student = await User.findById(studentId);
-        student.coursesEnrolled.splice(student.coursesEnrolled.indexOf(course._id), 1);
-        await student.save();
-    });
-    const instructor = await Instructor.findById(course.instructor);
-    instructor.myCourses.splice(instructor.myCourses.indexOf(course._id), 1);
-});
 
 module.exports = mongoose.model("Course", courseSchema);

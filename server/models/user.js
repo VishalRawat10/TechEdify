@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const Review = require("../models/review");
-const Course = require("../models/course");
 
 const userSchema = new Schema({
     fullname: {
@@ -32,7 +30,7 @@ const userSchema = new Schema({
     },
     address: String,
     country: String,
-    phone: String,
+    contact: String,
     about: String,
     isSuspended: {
         type: Boolean,
@@ -51,23 +49,8 @@ const userSchema = new Schema({
     },
     currDevice: {
         type: String,
-    }
+    },
 }, { timestamps: true });
 
-userSchema.post("findOneAndDelete", async (user) => {
-    const reviews = await Review.find({ author: user._id });
-    reviews.forEach(async (review, idx) => {
-        const course = await Course.findById(review.courseId);
-        course.reviews.splice(idx, 1);
-        await course.save();
-    });
-    console.log(user);
-    user.coursesEnrolled.forEach(async (courseId, idx) => {
-        const course = await Course.findById(courseId);
-        course.enrolledStudents.splice(idx, 1);
-        await course.save();
-    });
-    await Review.deleteMany({ author: user._id });
-})
 
 module.exports = mongoose.model("User", userSchema);

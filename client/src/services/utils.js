@@ -1,4 +1,5 @@
-export const getDate = (date, shortWeekday) => {
+export const getDateAndTime = (date, shortWeekday) => {
+
     const options = {
         weekday: shortWeekday ? "short" : 'long',
         year: 'numeric',
@@ -8,8 +9,40 @@ export const getDate = (date, shortWeekday) => {
         minute: '2-digit',
         timeZoneName: 'short'
     };
-    return new Date(date).toLocaleString('en-IN', options);
+    if (date)
+        return new Date(date).toLocaleString('en-IN', options);
 
+}
+
+export const getDate = (date) => {
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }; if (date)
+        return new Date(date).toLocaleString('en-IN', options);
+}
+
+export const getDateAndDay = (date, shortWeekday) => {
+    const options = {
+        weekday: shortWeekday ? "short" : 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }; if (date)
+        return new Date(date).toLocaleString('en-IN', options);
+}
+
+export const getTime = (date) => {
+    const createdAt = new Date(date);
+    let indiaTimeFormatter = new Intl.DateTimeFormat('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata' // Specify the time zone for India
+    });
+    if (date)
+        return indiaTimeFormatter.format(createdAt);
 }
 
 export const userDetailsFormValidation = (userDetails) => {

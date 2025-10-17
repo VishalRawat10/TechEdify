@@ -30,7 +30,9 @@ export default function EnrollButton({ className, courseId, setIsLoading }) {
         image: "/images/logo.png",
         description: paymentRes.data.course.title,
         order_id: paymentRes.data.order.id,
-        callback_url: `http://localhost:8080/api/v1/payments/verify`,
+        callback_url: `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/v1/payments/verify`,
         prefill: {
           name: user?.fullname,
           email: user?.email,

@@ -15,7 +15,7 @@ export default function TutorAppLayoutSidebar() {
   const { setMessageInfo } = useContext(MessageContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const { logoutTutor } = useContext(TutorContext);
+  const { logoutTutor, tutor } = useContext(TutorContext);
 
   const [hideSidebar, setHideSidebar] = useState(true);
 
@@ -35,59 +35,71 @@ export default function TutorAppLayoutSidebar() {
 
   return (
     <section
-      className={`absolute z-10 w-[12rem] h-full top-0 bottom-0 bg-light-card dark:bg-dark-card flex flex-col py-6 shadow-md dark:shadow-white/20 ${
-        hideSidebar && "-translate-x-full"
-      } lg:translate-x-0 lg:static lg:w-[17rem]`}
+      className={`${!hideSidebar && "w-screen h-screen bg-black/30 absolute"}`}
+      onClick={() => setHideSidebar(!hideSidebar)}
     >
-      {/* logo  */}
-      <div className="w-full flex items-center justify-center relative">
-        <img
-          src="/images/logo.png"
-          alt=""
-          className="h-12 object-contain hidden lg:block"
-        />
-        <img
-          src="/images/smallerlogo.png"
-          alt=""
-          className="h-12 object-contain lg:hidden"
-        />
-        <button
-          className="cursor-pointer absolute -right-8 lg:hidden"
-          onClick={() => setHideSidebar(!hideSidebar)}
-        >
-          {hideSidebar ? <ArrowForwardIosIcon /> : <ArrowBackIosIcon />}
-        </button>
-      </div>
-      {/* side bar item-list  */}
-      <div className="flex flex-col mt-12 gap-1">
-        <SidebarItem
-          to="/tutor/dashboard"
-          icon={<SpaceDashboardIcon />}
-          text="Dashboard"
-          location={location}
-        />
-        <SidebarItem
-          to="/tutor/courses"
-          icon={<MenuBookIcon />}
-          text="My courses"
-          location={location}
-        />
-        <SidebarItem
-          to="/tutor/courses/create-course"
-          icon={<AddCircleIcon />}
-          text="Create course"
-          location={location}
-        />
-      </div>
-      {/* Other settings  */}
-      <div className=" mt-auto flex flex-col items-center gap-4">
-        {/* Logout Btn  */}
-        <button
-          className="bg-dark w-fit dark:bg-light hover:bg-black dark:hover:bg-white px-4 py-2 rounded-full text-sm font-semibold text-white dark:text-black cursor-pointer flex items-center gap-2"
-          onClick={handleLogoutBtn}
-        >
-          <LogoutIcon /> Logout
-        </button>
+      <div
+        className={`absolute z-20 w-[12rem] h-screen top-0 bottom-0 bg-light-card dark:bg-dark-card flex flex-col py-6 shadow-md dark:shadow-white/20 ${
+          hideSidebar && "-translate-x-full"
+        } lg:translate-x-0 lg:static lg:w-[17rem]`}
+      >
+        {/* logo  */}
+        <div className="w-full flex items-center justify-center relative">
+          <img
+            src="/images/logo.png"
+            alt=""
+            className="h-12 object-contain hidden lg:block"
+          />
+          <img
+            src="/images/smallerlogo.png"
+            alt=""
+            className="h-12 object-contain lg:hidden"
+          />
+          <button
+            className="cursor-pointer absolute -right-8 lg:hidden"
+            onClick={() => setHideSidebar(!hideSidebar)}
+          >
+            {hideSidebar ? <ArrowForwardIosIcon /> : <ArrowBackIosIcon />}
+          </button>
+        </div>
+        {/* side bar item-list  */}
+        <div className="flex flex-col mt-12 gap-1">
+          <SidebarItem
+            to="/tutor/dashboard"
+            icon={<SpaceDashboardIcon />}
+            text="Dashboard"
+            location={location}
+          />
+          <SidebarItem
+            to="/tutor/courses"
+            icon={<MenuBookIcon />}
+            text="My courses"
+            location={location}
+          />
+          <SidebarItem
+            to="/tutor/courses/create-course"
+            icon={<AddCircleIcon />}
+            text="Create course"
+            location={location}
+          />
+        </div>
+        {/* Other settings  */}
+        <div className=" mt-auto flex flex-col items-center gap-4 border-t pt-6 mx-4">
+          <Link to="/tutor/profile">
+            <img
+              src={tutor.profileImage.url || "/images/User.png"}
+              alt={tutor.fullname}
+              className="h-14 rounded-full aspect-square object-cover hover:opacity-90"
+            />
+          </Link>
+          {/* Logout Btn  */}
+          <button
+            className="bg-dark w-fit dark:bg-light hover:bg-black dark:hover:bg-white px-4 py-2 rounded-full text-sm font-semibold text-white dark:text-black cursor-pointer flex items-center gap-2"
+            onClick={handleLogoutBtn}
+          >
+            <LogoutIcon /> Logout
+          </button>
+        </div>
       </div>
     </section>
   );

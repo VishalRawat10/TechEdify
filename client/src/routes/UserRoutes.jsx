@@ -12,11 +12,11 @@ const LecturePage = lazy(() => import("../pages/user/LecturePage"));
 const NotFoundPage = lazy(() => import("../pages/user/NotFoundPage"));
 const LoginPage = lazy(() => import("../pages/user/LoginPage"));
 const DashboardPage = lazy(() => import("../pages/user/DashboardPage"));
+const DiscussionsPage = lazy(() => import("../pages/user/DiscussionsPage"));
 
 import Loader from "../components/Loader";
 import AuthWrapper from "../components/AuthWrapper";
 import UserAppLayout from "../layouts/UserAppLayout";
-import UserProfilePage from "../pages/user/UserProfilePage";
 
 export default function UserRoutes() {
   return (
@@ -94,6 +94,16 @@ export default function UserRoutes() {
             <AuthWrapper>
               <Suspense fallback={<Loader />}>
                 <DashboardPage />
+              </Suspense>
+            </AuthWrapper>
+          }
+        />
+        <Route
+          path="discussions"
+          element={
+            <AuthWrapper>
+              <Suspense fallback={<Loader />}>
+                <DiscussionsPage />
               </Suspense>
             </AuthWrapper>
           }

@@ -17,9 +17,10 @@ import { validateLecture } from "../../services/utils";
 export default function AddLecture() {
   const { courseId } = useParams();
   const { setIsLoading } = useContext(TutorContext);
-  const [isUploading, setIsUploading] = useState(false);
   const { setMessageInfo } = useContext(MessageContext);
-  const [course, setCourse] = useState();
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [course, setCourse] = useState(null);
   const [lectureDetails, setLectureDetails] = useState({
     title: "",
     description: "",
@@ -30,200 +31,271 @@ export default function AddLecture() {
     status: "unpublished",
   });
 
+  const [preview, setPreview] = useState({
+    thumbnail: "",
+    video: "",
+    notes: "",
+    assignment: "",
+  });
+
+  // Fetch course info
   useEffect(() => {
     const getCourse = async () => {
       setIsLoading(true);
       try {
         const res = await apiInstance.get(`/tutors/courses/${courseId}`);
-        setIsLoading(false);
         setCourse(res.data.course);
       } catch (err) {
+        setMessageInfo(
+          err.response?.data?.message || "Failed to load course!",
+          true
+        );
+      } finally {
         setIsLoading(false);
-        console.log(err);
-        setMessageInfo(err.response.data.message, true);
       }
     };
     getCourse();
   }, []);
 
-  //Input change handler
+  // Handle text input
   const handleInputChange = (e) => {
     setLectureDetails({ ...lectureDetails, [e.target.name]: e.target.value });
   };
 
+  // Handle file input + previews
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    const file = files[0];
+    if (!file) return;
+
+    setLectureDetails((prev) => ({ ...prev, [name]: file }));
+
+    const type = file.type;
+    if (type.includes("image")) {
+      setPreview((prev) => ({ ...prev, [name]: URL.createObjectURL(file) }));
+    } else if (type.includes("video")) {
+      setPreview((prev) => ({ ...prev, [name]: URL.createObjectURL(file) }));
+    } else if (type.includes("pdf")) {
+      setPreview((prev) => ({ ...prev, [name]: URL.createObjectURL(file) }));
+    }
+  };
+
+  // Submit form
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
+    const errors = validateLecture(lectureDetails);
+    if (errors.isError) {
+      setMessageInfo("Please fix form errors before submitting.", true);
+      return;
+    }
+
     try {
-      const formData = new FormData();
-      formData.append("title", lectureDetails.title);
-      formData.append("description", lectureDetails.description);
-      formData.append("lectureVideo", lectureDetails.lectureVideo);
-      formData.append("thumbnail", lectureDetails.thumbnail);
-      formData.append("status", lectureDetails.status);
-      if (lectureDetails.assignment) {
-        formData.append("assignment", lectureDetails.assignment);
-      }
-      if (lectureDetails.notes) {
-        formData.append("notes", lectureDetails.notes);
-      }
       setIsUploading(true);
+      const formData = new FormData();
+      Object.entries(lectureDetails).forEach(([key, value]) => {
+        if (value) formData.append(key, value);
+      });
+
       const res = await apiInstance.post(
         `/courses/${courseId}/lectures`,
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      setIsUploading(false);
+
       setMessageInfo(
         res.data.message || "Lecture uploaded successfully!",
         false
       );
+      handleDiscard();
     } catch (err) {
-      console.log(err);
+      setMessageInfo(
+        err.response?.data?.message || "Failed to upload lecture!",
+        true
+      );
+    } finally {
       setIsUploading(false);
-      setMessageInfo(err.response.data.message || "Unable to upload lecture!");
     }
   };
 
-  //Discard all
+  // Reset form
   const handleDiscard = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setLectureDetails({
       title: "",
       description: "",
       thumbnail: null,
-      video: null,
+      lectureVideo: null,
       notes: null,
       assignment: null,
+      status: "unpublished",
+    });
+    setPreview({
+      thumbnail: "",
+      video: "",
+      notes: "",
+      assignment: "",
     });
   };
 
   const errors = validateLecture(lectureDetails);
 
   return (
-    <div className="px-2 h-[calc(100vh-4.5rem)] py-4 flex flex-col gap-4 lg:w-[746px] lg:mx-auto ">
-      {/* Heading  */}
-      <div>
+    <div className="px-4 h-[calc(100vh-4.5rem)] py-6 flex flex-col gap-4 lg:w-[746px] lg:mx-auto">
+      {/* Heading */}
+      <header>
         <h1 className="font-semibold text-xl lg:text-2xl">{course?.title}</h1>
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center mt-1">
           <AddCircleOutlineIcon fontSize="small" />
-          <h3 className=" text-lg lg:text-xl">Add Lecture</h3>
+          <h3 className="text-lg lg:text-xl">Add Lecture</h3>
         </div>
+      </header>
 
-        {/* Uploading animation  */}
-        {isUploading && (
-          <div className="w-full bg-green-500 dark:bg-green-600 rounded-lg p-4 flex gap-4 items-center text-sm text-white">
-            <CircularProgress size={"20px"} color="white" /> Lecture is
-            uploading! Do not exit or logout!
-          </div>
-        )}
-        {/* Add lecture form  */}
-        <form
-          className="grid grid-cols-1 gap-4 h-[calc(100vh-12rem)] overflow-auto scrollbar-none pb-6"
-          onSubmit={handleFormSubmit}
-        >
+      {/* Uploading animation */}
+      {isUploading && (
+        <div className="w-full bg-green-500 dark:bg-green-600 rounded-lg p-4 flex gap-4 items-center text-sm text-white">
+          <CircularProgress size={"20px"} color="inherit" /> Lecture is
+          uploading! Please wait...
+        </div>
+      )}
+
+      {/* Lecture Form */}
+      <form
+        className="grid grid-cols-1 gap-6 h-[calc(100vh-12rem)] overflow-auto scrollbar-none pb-6"
+        onSubmit={handleFormSubmit}
+      >
+        {/* Lecture title */}
+        <FormInput
+          label="Lecture Title"
+          placeholder="Enter the lecture title..."
+          value={lectureDetails.title}
+          name="title"
+          onChange={handleInputChange}
+          required
+          disabled={isUploading}
+          minLength={10}
+          errMsg={errors.title}
+        />
+
+        {/* Description */}
+        <FormTextarea
+          label="Lecture Description"
+          placeholder="Write the lecture description..."
+          value={lectureDetails.description}
+          name="description"
+          onChange={handleInputChange}
+          disabled={isUploading}
+          required
+          minLength={20}
+          errMsg={errors.description}
+        />
+
+        {/* Thumbnail */}
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Lecture Thumbnail</p>
+          {preview.thumbnail && (
+            <img
+              src={preview.thumbnail}
+              alt="Lecture Thumbnail Preview"
+              className="rounded-xl w-full max-h-[300px] object-cover"
+            />
+          )}
           <FormInput
-            label="Lecture title"
-            placeholder="Enter the lecture title..."
-            value={lectureDetails.title}
-            name="title"
-            onChange={handleInputChange}
-            required={true}
-            disabled={isUploading}
-            minLength={10}
-            errMsg={errors.title}
-          />
-          <FormTextarea
-            label="Lecture Description"
-            placeholder="Write the lecture description..."
-            value={lectureDetails.description}
-            name="description"
-            onChange={handleInputChange}
-            disabled={isUploading}
-            required={true}
-            minLength={20}
-            errMsg={errors.description}
-          ></FormTextarea>
-          <FormInput
-            label="Lecture Thumbnail"
+            label="Upload Thumbnail"
             type="file"
             accept="image/*"
             name="thumbnail"
-            onChange={(e) =>
-              setLectureDetails({
-                ...lectureDetails,
-                thumbnail: e.target.files[0],
-              })
-            }
+            onChange={handleFileChange}
             disabled={isUploading}
-            required={true}
+            required
           />
+        </div>
+
+        {/* Notes */}
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Lecture Notes</p>
+          {preview.notes && (
+            <iframe
+              src={preview.notes}
+              className="w-full h-[300px] rounded-lg"
+              title="Notes Preview"
+            ></iframe>
+          )}
           <FormInput
             disabled={isUploading}
-            label="Lecture notes"
+            label="Upload Notes (PDF)"
             type="file"
-            accept="pdf/*"
+            accept="application/pdf"
             name="notes"
-            onChange={(e) =>
-              setLectureDetails({
-                ...lectureDetails,
-                notes: e.target.files[0],
-              })
-            }
+            onChange={handleFileChange}
           />
+        </div>
+
+        {/* Assignment */}
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Lecture Assignment</p>
+          {preview.assignment && (
+            <iframe
+              src={preview.assignment}
+              className="w-full h-[300px] rounded-lg"
+              title="Assignment Preview"
+            ></iframe>
+          )}
           <FormInput
             disabled={isUploading}
-            label="Lecture assignment"
+            label="Upload Assignment (PDF)"
             type="file"
-            accept="pdf/*"
+            accept="application/pdf"
             name="assignment"
-            onChange={(e) =>
-              setLectureDetails({
-                ...lectureDetails,
-                assignment: e.target.files[0],
-              })
-            }
+            onChange={handleFileChange}
           />
+        </div>
+
+        {/* Video */}
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Lecture Video</p>
+          {preview.lectureVideo && (
+            <video
+              src={preview.lectureVideo}
+              controls
+              className="rounded-xl w-full aspect-video"
+            />
+          )}
           <FormInput
             disabled={isUploading}
-            label="Lecture video"
+            label="Upload Video"
             type="file"
             accept="video/*"
             name="lectureVideo"
-            onChange={(e) =>
-              setLectureDetails({
-                ...lectureDetails,
-                lectureVideo: e.target.files[0],
-              })
-            }
-            required={true}
+            onChange={handleFileChange}
+            required
           />
-          <FormSelect
-            value={lectureDetails.status}
-            label="Lecture status"
-            onChange={handleInputChange}
-            name="status"
-          >
-            <FormOption value={"published"}>Publish</FormOption>
-            <FormOption value={"unpublished"}>Unpublish</FormOption>
-          </FormSelect>
+        </div>
 
-          {/* Form Buttons  */}
-          <div className="flex gap-4 px-2">
-            <FormButton type="submit" disabled={isUploading || errors.isError}>
-              Upload
-            </FormButton>
-            <FormButton onClick={handleDiscard} disabled={isUploading}>
-              Discard
-            </FormButton>
-          </div>
-        </form>
-      </div>
+        {/* Status */}
+        <FormSelect
+          value={lectureDetails.status}
+          label="Lecture Status"
+          onChange={handleInputChange}
+          name="status"
+          disabled={isUploading}
+        >
+          <FormOption value="published">Published</FormOption>
+          <FormOption value="unpublished">Unpublished</FormOption>
+        </FormSelect>
+
+        {/* Buttons */}
+        <div className="flex gap-4 px-2">
+          <FormButton type="submit" disabled={isUploading || errors.isError}>
+            Upload
+          </FormButton>
+          <FormButton onClick={handleDiscard} disabled={isUploading}>
+            Discard
+          </FormButton>
+        </div>
+      </form>
     </div>
   );
 }

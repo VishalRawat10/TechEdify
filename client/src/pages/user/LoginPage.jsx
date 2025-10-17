@@ -7,10 +7,11 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { UserContext } from "../../context/UserContext";
 import { MessageContext } from "../../context/MessageContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userCredentials, setUserCredentials] = useState({
@@ -35,7 +36,7 @@ export default function LoginPage() {
       const res = await login(userCredentials);
       setIsLoading(false);
       setMessageInfo(res.data.message, false);
-      navigate("/dashboard");
+      navigate(searchParams.get("redirectTo") || "/dashboard");
     } catch (err) {
       setIsLoading(false);
       setMessageInfo(err.response.data.message);

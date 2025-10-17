@@ -1,14 +1,16 @@
-const User = require("../models/user");
-const Tutor = require("../models/tutor");
 const Course = require("../models/course");
 const Lecture = require("../models/lecture");
-const Review = require("../models/review");
 const ExpressError = require("../utils/ExpressError");
 const { courseSchema, lectureSchema } = require("../config/joiSchema.config");
-const { cloudinary } = require("../config/cloudinary.config");
+
+module.exports.getAllCourses = async (req, res, next) => {
+    const courses = await Course.find().select("+lectures +enrolledStudents").populate("tutor", "fullname profileImage");
+
+    return res.status(200).json({ message: "Courses fetched successfully!", courses });
+}
 
 module.exports.getPublishedCourses = async (req, res, next) => {
-    const courses = await Course.find({ publishStatus: "published" }).populate("tutor");
+    const courses = await Course.find({ isPublished: true }).populate("tutor");
     return res.status(200).json({ courses });
 }
 
@@ -20,12 +22,7 @@ module.exports.getCoursesForHomePage = async (req, res, next) => {
 //get course
 module.exports.getCourse = async (req, res, next) => {
     const { id } = req.params;
-    const course = await Course.findOne({ $and: [{ _id: id }, { publishStatus: "published" }] }).populate({
-        path: "reviews", populate: {
-            path: "author",
-            select: "fullname"
-        }
-    }).populate("tutor", "fullname profileImage message");
+    const course = await Course.findOne({ $and: [{ _id: id }, { isPublished: true }] }).populate("tutor", "fullname profileImage message");
     if (!course) {
         return next(new ExpressError(400, "Course does not exist!"));
     }
@@ -89,26 +86,6 @@ module.exports.editCourse = async (req, res, next) => {
         const course = await Course.findByIdAndUpdate(id, { title, type, description, alias, price, chapters: JSON.parse(chapters) }, { new: true, runValidators: true }).select("+lectures +enrolledStudents").populate("lectures");
         return res.status(200).json({ message: "Course updated successfully!", course });
     }
-}
-
-//Publish course
-module.exports.publishCourse = async (req, res, next) => {
-    const { id } = req.params;
-    const course = await Course.findByIdAndUpdate(id, { publishStatus: "publish" }, { new: true });
-    if (!course) {
-        return next(new ExpressError(400, "Course does not exist!"));
-    }
-    return res.status(200).json({ message: "Course published successfully!", course });
-}
-
-//Unpublish course
-module.exports.unpublishCourse = async (req, res, next) => {
-    const { id } = req.params;
-    const course = await Course.findByIdAndUpdate(id, { publishStatus: "unpublish" }, { new: true });
-    if (!course) {
-        return next(new ExpressError(400, "Course does not exist!"));
-    }
-    return res.status(200).json({ message: "Course unpublished successfully!", course });
 }
 
 //Get lectures
@@ -184,27 +161,6 @@ module.exports.getLecture = async (req, res, next) => {
     }
     lecture.lectureVideo.url = signedUrl;
     return res.status(200).json({ message: "Lecture fetched successfully!", lecture });
-}
-
-//getLectureVideo
-module.exports.getLectureVideoUrl = async (req, res, next) => {
-    const { lectureId } = req.params;
-    console.log(lectureId);
-    const lecture = await Lecture.findOne({ _id: lectureId }).select("publicId title");
-    const signedUrl = cloudinary.url(lecture.publicId + ".m3u8", {
-        resource_type: 'video',
-        type: "private",
-        sign_url: true,
-        expires_at: Math.floor(Date.now() / 1000) + 3600, // 1hour expiration time
-        transformation: [
-            { streaming_profile: "hd", flags: "streaming" }
-        ],
-    });
-
-    if (!signedUrl) {
-        return next(new ExpressError(500, "Couldn't get lecture url!"));
-    }
-    return res.status(200).json({ lectureUrl: signedUrl });
 }
 
 //Edit lecture

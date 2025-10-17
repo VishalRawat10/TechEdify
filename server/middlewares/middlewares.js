@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const Tutor = require("../models/tutor");
-const Review = require("../models/review");
 const Admin = require("../models/admin");
+const Discussion = require("../models/discussion");
 const jwt = require("jsonwebtoken");
 const { verifyJwt } = require("../utils/jwtUtils");
 const BlacklistToken = require("../models/blacklistToken");
@@ -95,7 +95,11 @@ module.exports.isEnrolled = async (req, res, next) => {
 }
 
 module.exports.isCourseTutor = async (req, res, next) => {
-    const { id } = req.params;
+    let { id } = req.params;
+    if (!id) {
+        id = req.body.courseId;
+        console.log(id);
+    }
     const course = await Course.findById(id).select("+lectures");
     if (!course) {
         return next(new ExpressError(400, "Course not found!"));
@@ -108,19 +112,6 @@ module.exports.isCourseTutor = async (req, res, next) => {
     return next(new ExpressError(403, "You are not the tutor of course!"));
 }
 
-module.exports.isReviewAuthor = async (req, res, next) => {
-    const { reviewId } = req.params;
-    const review = await Review.findById(reviewId);
-    if (!review) {
-        return next(new ExpressError(400, "Review does not exist!"));
-    }
-    if (review.author === req.user._id) {
-        return next();
-    }
-    return next(new ExpressError(403, "You are not the review author!"));
-}
-
-
 module.exports.destroyFromCloudinary = (filename) => {
     if (filename) {
         return async (req, res, next) => {
@@ -129,4 +120,14 @@ module.exports.destroyFromCloudinary = (filename) => {
         }
     }
     return next();
+}
+
+module.exports.isDiscussionMember = async (req, res, next) => {
+    const discussion = await Discussion.findOne({ "members.member": req.tutor?._id || req.user?._id });
+
+
+    if (discussion) {
+        return next();
+    }
+    return next(new ExpressError(403, "You are not member of discussion!"));
 }

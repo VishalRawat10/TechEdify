@@ -57,4 +57,15 @@ const TutorStorage = new CloudinaryStorage({
     }
 });
 
-module.exports = { cloudinary, UserStorage, TutorStorage, LectureStorage, CourseStorage };
+const AdminStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        return {
+            folder: `TechEdify/Admins/${req.admin._id}`,
+            resource_type: 'auto',
+            public_id: "profile-image"
+        }
+    }
+})
+
+module.exports = { cloudinary, UserStorage, TutorStorage, LectureStorage, CourseStorage, AdminStorage };

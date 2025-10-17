@@ -1,11 +1,21 @@
 const Joi = require("joi");
 
+module.exports.userSchema = Joi.object({
+    email: Joi.string().email().required(),
+    fullname: Joi.string().min(2).required(),
+    DOB: Joi.date(),
+    contact: Joi.string().min(10),
+    address: Joi.string(),
+    country: Joi.string(),
+    about: Joi.string(),
+})
+
 module.exports.tutorSchema = Joi.object({
     fullname: Joi.string().min(2).required(),
     email: Joi.string().email().required(),
     personalEmail: Joi.string().email().required(),
     message: Joi.string().min(20).required(),
-    // password: Joi.string().min(8).required()
+    contact: Joi.string().min(10).required()
 });
 
 module.exports.courseSchema = Joi.object({
@@ -22,4 +32,16 @@ module.exports.lectureSchema = Joi.object({
     description: Joi.string().required(),
     status: Joi.string().required(),
     publicId: Joi.string().required(),
+});
+
+module.exports.queryMessageSchema = Joi.object({
+    email: Joi.string().email().required(),
+    fullname: Joi.string().min(2).required(),
+    queryMessage: Joi.string().min(10).required()
+});
+
+module.exports.adminSchema = Joi.object({
+    fullname: Joi.string().min(2).required(),
+    email: Joi.string().email().required(),
+    personalEmail: Joi.string().email().required()
 });

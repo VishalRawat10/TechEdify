@@ -2,6 +2,9 @@ import { Route, Routes } from "react-router-dom";
 import { lazy } from "react";
 import TutorAuthWrapper from "../components/TutorAuthWrapper";
 import UserAppLayout from "../layouts/UserAppLayout";
+import { UserProvider } from "../context/UserContext";
+import DiscussionsPage from "../pages/tutor/DiscussionsPage";
+import TutorProfile from "../pages/tutor/TutorProfile";
 
 const TutorLoginPage = lazy(() => import("../pages/tutor/TutorLoginPage"));
 const TutorDashboard = lazy(() => import("../pages/tutor/TutorDashboard"));
@@ -15,9 +18,19 @@ const EditLecture = lazy(() => import("../pages/tutor/EditLecture"));
 export default function TutorRoutes() {
   return (
     <Routes>
-      <Route path="" element={<UserAppLayout />}>
+      {/* Tutor Login Route  */}
+      <Route
+        path=""
+        element={
+          <UserProvider>
+            <UserAppLayout />
+          </UserProvider>
+        }
+      >
         <Route path="login" element={<TutorLoginPage />} />
       </Route>
+
+      {/* Tutor App Routes  */}
       <Route
         path="/*"
         element={
@@ -34,10 +47,9 @@ export default function TutorRoutes() {
           path="courses/:courseId/lectures/add-lecture"
           element={<AddLecture />}
         />
-        <Route
-          path="courses/:courseId/lectures/:lectureId/edit"
-          element={<EditLecture />}
-        />
+        <Route path="courses/:courseId/lectures" element={<EditLecture />} />
+        <Route path="discussions" element={<DiscussionsPage />} />
+        <Route path="profile" element={<TutorProfile />} />
       </Route>
     </Routes>
   );

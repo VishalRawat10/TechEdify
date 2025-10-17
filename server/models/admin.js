@@ -17,11 +17,15 @@ const adminSchema = new Schema({
     personalEmail: {
         type: String,
         required: true,
-        select: false,
+
     },
     email: {
         type: String,
         required: true,
+    },
+    profileImage: {
+        url: String,
+        filename: String
     }
 });
 

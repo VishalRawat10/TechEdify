@@ -31,7 +31,7 @@ export default function Header() {
       <header className="z-10 relative font-heading">
         <nav
           className={
-            "max-w-screen overflow-x-hidden h-[var(--header-h)] flex items-center px-4 md:px-8 bg-header-light dark:bg-header-dark justify-between md:after:content-none shadow-sm dark:shadow-white/10 relative" +
+            "max-w-screen overflow-x-hidden h-[var(--header-h)] flex items-center px-4 lg:px-8 bg-header-light dark:bg-header-dark justify-between lg:after:content-none shadow-sm dark:shadow-white/10 relative" +
             " " +
             (sideMenu
               ? "after:content-[''] after:w-screen after:h-screen after:fixed after:top-0 after:left-0 after:bg-dark/20"
@@ -46,20 +46,20 @@ export default function Header() {
             <img
               src="/images/logo.png"
               alt="logo"
-              className="h-12 hidden md:block"
+              className="h-12 hidden lg:block"
               loading="lazy"
             />
             <img
               src="/images/smallerlogo.png"
               alt="logo"
-              className="h-12 md:hidden"
+              className="h-12 lg:hidden"
               loading="lazy"
             />
           </Link>
 
           {/* Menu Button  */}
           <div
-            className="flex items-center md:hidden"
+            className="flex items-center lg:hidden"
             onClick={() => setSideMenu(!sideMenu)}
           >
             <MenuIcon sx={{ fontSize: "2rem", color: "var(--main)" }} />
@@ -69,11 +69,11 @@ export default function Header() {
           <div
             className={
               (sideMenu ? "translate-x-0 " : "-translate-x-full ") +
-              "fixed top-0 left-0 transition-transform flex  flex-col min-w-[15rem] items-center rounded-r-xl  gap-4 pb-12  bg-header-light shadow-sm dark:bg-header-dark z-50 md:flex md:static md:bg-transparent md:flex-row h-full md:w-fit md:min-w-none md:py-0 md:rounded-none md:dark:bg-transparent md:shadow-none md:px-4 md:gap-4 md:translate-x-0"
+              "fixed top-0 left-0 transition-transform flex  flex-col min-w-[15rem] items-center rounded-r-xl gap-6 pb-12  bg-header-light shadow-sm dark:bg-header-dark z-40 lg:flex lg:static lg:bg-transparent lg:flex-row h-full lg:w-fit lg:min-w-none lg:py-0 lg:rounded-none lg:dark:bg-transparent lg:shadow-none lg:px-4 lg:gap-6 lg:translate-x-0"
             }
           >
             {/* Menu logo */}
-            <button className="border-b-2 border-main md:hidden text-light-primary dark:text-dark-primary h-[var(--header-h)] w-full flex items-center justify-center">
+            <button className="border-b-2 border-main lg:hidden text-light-primary dark:text-dark-primary h-[var(--header-h)] w-full flex items-center justify-center">
               <img
                 src="/images/smallerlogo.png"
                 alt=""
@@ -93,7 +93,7 @@ export default function Header() {
             <NavList />
 
             {/* Log In / Sign up /Log out Buttons  */}
-            <div className="flex border-2 border-main rounded-[2rem] bg-main font-semibold mx-6 mt-auto md:mt-0 md:mx-0 ">
+            <div className="flex border-2 border-main rounded-[2rem] bg-main font-semibold mx-6 mt-auto lg:mt-0 lg:mx-0 ">
               {user ? (
                 <button className="nav-btns" onClick={handleLogout}>
                   Log out
@@ -119,7 +119,7 @@ export default function Header() {
             {/* Dashboard Button  */}
             {user && (
               <Link
-                className="flex flex-row items-center justify-center gap-2 cursor-pointer hover:opacity-75 hover:underline mb-12 md:mb-0"
+                className="flex flex-row items-center justify-center gap-2 cursor-pointer hover:opacity-75 hover:underline mb-12 lg:mb-0"
                 title="dashboard"
                 to="/dashboard"
               >

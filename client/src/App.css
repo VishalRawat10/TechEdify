@@ -75,6 +75,17 @@
       width: 0;
     }
   }
+
+  --animate-chat-message: chat-message 2s linear;
+  @keyframes chat-message {
+    0% {
+      border-bottom: 2px solid #ffffff;
+    }
+    100% {
+      border-bottom: 2px solid #ffffff;
+      width: 0;
+    }
+  }
 }
 
 @layer base {
