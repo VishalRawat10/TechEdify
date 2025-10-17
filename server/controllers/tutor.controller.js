@@ -4,64 +4,63 @@ const ExpressError = require("../utils/ExpressError");
 const Tutor = require("../models/tutor");
 const Course = require("../models/course");
 const Lecture = require("../models/lecture");
+const Discussion = require("../models/discussion");
+const Message = require("../models/message");
+const Enrollment = require("../models/enrollment");
 const BlacklistToken = require("../models/blacklistToken");
 const { tutorSchema } = require("../config/joiSchema.config");
-const { cloudinary } = require("../config/cloudinary.config");
 
 module.exports.getTutorsForHomePage = async (req, res, next) => {
     const tutors = await Tutor.aggregate([{ $sample: { size: 3 } }]);
     return res.status(200).json({ tutors, message: "Tutors fetched successfully!" });
 }
 
-module.exports.getTutors = async (req, res, next) => {
-    const tutors = await Tutor.find();
-    return res.status(200).json({ tutors });
-}
+module.exports.getDashboardStats = async (req, res, next) => {
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-module.exports.getTutor = async (req, res, next) => {
-    const { id } = req.params;
-    const tutor = await Tutor.findById(id).populate("myCourses");
-    return res.status(200).json({ tutor });
-}
+    const [courses, publishedCourses, unpublishedCourses, ongoingCourses, completedCourses, upcomingCourses, lastMonthCourses, thisMonthCourses] = await Promise.all([
+        await Course.find({ tutor: req.tutor._id }),
+        await Course.find({ tutor: req.tutor._id, isPublished: true }),
+        await Course.find({ tutor: req.tutor._id, isPublished: false }),
+        await Course.find({ tutor: req.tutor._id, courseStatus: "ongoing" }),
+        await Course.find({ tutor: req.tutor._id, courseStatus: "completed" }),
+        await Course.find({ tutor: req.tutor._id, courseStatus: "upcoming" }),
+        await Course.find({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
+        await Course.find({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
+    ]);
 
-module.exports.suspend = async (req, res, next) => {
-    const { id } = req.params;
-    const tutor = await Tutor.findByIdAndUpdate(id, { isSuspended: true }, { new: true });
-    return res.status(200).json({ tutor, message: "Tutor is suspended!" });
-}
+    const coursesIds = courses.map((course) => course._id);
 
-module.exports.unsuspend = async (req, res, next) => {
-    const { id } = req.params;
-    const tutor = await Tutor.findByIdAndUpdate(id, { isSuspended: false }, { new: true });
-    return res.status(200).json({ tutor, message: "Tutor is unsuspended!" });
-}
+    const [enrollments, lastMonthEnrollements, thisMonthEnrollments, lastMonthLectures, thisMonthLectures] = await Promise.all([
+        await Enrollment.find({ course: { $in: coursesIds } }),
+        await Enrollment.find({
+            course: { $in: coursesIds }, createdAt: { $gte: lastMonth, $lt: thisMonth }
+        }),
+        await Enrollment.find({
+            course: { $in: coursesIds }, createdAt: { $gte: thisMonth }
+        }),
+        await Lecture.find({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
+        await Lecture.find({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
+    ]);
 
-module.exports.createTutor = async (req, res, next) => {
-    const { fullname, password, email, phone, message, isSuspended, personalEmail } = req.body;
-    const { error } = tutorSchema.validate({ fullname, email, message, personalEmail });
-    if (error) {
-        const errMsg = error.details.map((el) => el.message).join(" | ");
-        return next(new ExpressError(400, errMsg));
-    }
-    if (!password) {
-        return next(new ExpressError(400, "Password is required!"));
-    }
+    return res.status(200).json({
+        totalCourses: courses.length,
+        publishedCourses: publishedCourses.length,
+        unpublishedCourses: unpublishedCourses.length,
+        ongoingCourses: ongoingCourses.length,
+        completedCourses: completedCourses.length,
+        upcomingCourses: upcomingCourses.length,
+        lastMonthCourses: lastMonthCourses.length,
+        thisMontCourses: thisMonthCourses.length,
+        totalEnrollments: enrollments.length,
+        lastMonthEnrollements: lastMonthEnrollements.length,
+        thisMonthEnrollments: thisMonthEnrollments.length,
+        thisMonthLectures: thisMonthLectures.length,
+        lastMonthLectures: lastMonthLectures.length
+    });
 
-    if (await Tutor.findOne({ $or: [{ email }, { personalEmail }, { phone }] })) {
-        return next(new ExpressError(400, "Tutor exists with given email or personalEmail or phone!"))
-    };
-    const hashPassword = await bcrypt.hash(password, 10);
-    const tutor = new Tutor(
-        { fullname, password: hashPassword, email, phone, message, isSuspended, personalEmail }
-    );
-    await tutor.save();
-    return res.status(201).json({ message: "Tutor created successfully!", tutor });
-}
-
-module.exports.destroyTutor = async (req, res, next) => {
-    const { id } = req.params;
-    const tutor = await Tutor.findByIdAndDelete(id);
-    return res.status(200).json({ message: "Tutor deleted successfully!" });
 }
 
 module.exports.login = async (req, res, next) => {
@@ -101,14 +100,14 @@ module.exports.getProfile = async (req, res, next) => {
     return res.status(200).json({ tutor: req.tutor });
 }
 
-module.exports.getTutorCourses = async (req, res, next) => {
+module.exports.getCourses = async (req, res, next) => {
     // const courses = await Course.find({ tutor: req.tutor._id }).select("+lectures +enrolledStudents");
     const courses = await Course.find().select("+lectures +enrolledStudents");
 
     return res.status(200).json({ courses, message: "All courses fetched successfully!" })
 }
 
-module.exports.getTutorCourse = async (req, res, next) => {
+module.exports.getCourse = async (req, res, next) => {
     const { id } = req.params;
     const course = await Course.findById(id).select("+lectures +enrolledStudents").populate("lectures");
     if (!course) {
@@ -117,13 +116,13 @@ module.exports.getTutorCourse = async (req, res, next) => {
     return res.status(200).json({ course, message: "Course fetched successfully!" });
 }
 
-module.exports.getTutorCourseLectures = async (req, res, next) => {
+module.exports.getCourseLectures = async (req, res, next) => {
     const { id } = req.params;
     const lectures = await Lecture.find({ course: id }).populate("course", "title");
     return res.status(200).json({ lectures, message: "Lectures fetched successfully!" });
 }
 
-module.exports.getTutorCourseLecture = async (req, res, next) => {
+module.exports.getCourseLecture = async (req, res, next) => {
     const { lectureId, id } = req.params;
     const lecture = await Lecture.findById(lectureId);
     if (!lecture) {
@@ -133,31 +132,72 @@ module.exports.getTutorCourseLecture = async (req, res, next) => {
 }
 
 module.exports.updateProfile = async (req, res, next) => {
-    const { fullname, email, personalEmail, phone, message } = req.body;
-    const error = tutorSchema.validate({ fullname, email, personalEmail, phone, message });
+    const { fullname, email, personalEmail, contact, message } = req.body;
+
+    const updatedTutor = { fullname, email, personalEmail, contact, message };
+
+    const error = tutorSchema.validate(updatedTutor);
     if (error) {
         const errMsg = error.details.map((el) => el.message).join(" | ");
         return next(new ExpressError(400, errMsg));
     }
-    const tutor = await Tutor.findByIdAndUpdate(req.tutor._id, { fullname, email, personalEmail, phone, message }, { new: true });
+
+    if (req.file) updatedTutor.profileImage = {
+        url: req.file.pathname,
+        filename: req.file.filename,
+    }
+    const tutor = await Tutor.findByIdAndUpdate(req.tutor._id, updatedTutor, { new: true });
 
     return res.status(200).json({ tutor, message: "Profile updated!" });
 }
 
-module.exports.updateProfileImage = async (req, res, next) => {
-    const tutor = await Tutor.findByIdAndUpdate(req.tutor._id, {
-        profileImage: {
-            url: req.file.path,
-            filename: req.file.filname,
+module.exports.getDiscussions = async (req, res, next) => {
+    const discussions = await Discussion.find({ "members.member": req.tutor._id }).populate("course", "title thumbnail").populate("members.member", "fullname profileImage").populate({ path: "lastMessage", populate: { path: "sender", select: "fullname profileImage createdAt" }, select: "content sender senderModel" });
+
+    return res.status(200).json({ message: "Discussions fetched successfully!", discussions });
+}
+
+module.exports.getUndiscussedCourses = async (req, res, next) => {
+    const discussions = await Discussion.find({ "members.member": req.tutor._id, type: "course" }).populate("course", "_id");
+
+    const discussedCourses = discussions.map((discussion) => {
+        return discussion.course._id;
+    });
+
+    const undiscussedCourses = await Course.find({ tutor: req.tutor._id, _id: { $nin: discussedCourses } });
+
+    return res.status(200).json({ message: "Undiscussed courses fetched successfully!", undiscussedCourses });
+}
+
+module.exports.getDiscussionMessages = async (req, res, next) => {
+    const { discussionId } = req.params;
+
+    const messages = await Message.find({ discussion: discussionId }).populate("sender", "fullname profileImage").populate({
+        path: "discussion",
+        populate: {
+            path: "course",
+            select: "title thumbnail"
         }
-    }, { new: true });
-    return res.status(200).json({ tutor, message: "Profile photo updated successfully!" });
+    });
+
+    return res.status(200).json({ message: "Messages fetched successfully!", messages });
 }
 
-module.exports.removeProfileImage = async (req, res, next) => {
-    const result = await cloudinary.uploader.destroy(req.tutor.profileImage.filename);
-    if (result.result === "not found") return next(new ExpressError(400, "Image not found!"));
-    const tutor = await Tutor.findByIdAndUpdate(req.user._id, { profileImage: { url: "", filename: "" } }, { new: true });
-    return res.status(200).json({ tutor, message: "Profile image removed successfully!" });
+module.exports.getUnreadMessages = async (req, res, next) => {
+    const discussions = (await Discussion.find({ "members.member": req.tutor._id })).map((discussion) => discussion._id);
+
+    const unreadMessages = await Message.find({ discussion: { $in: discussions }, sender: { $ne: req.tutor._id }, readBy: { $ne: req.tutor._id } }).populate("sender", "fullname profileImage");
+
+    return res.status(200).json({ unreadMessages, message: "Undelivered message fetched successfully!" });
+
 }
 
+module.exports.getUndiscussedUsers = async (req, res, next) => {
+    const discussions = await Discussion.find({ "members.member": req.tutor._id, type: "private" }).select("members.member");
+
+    const discussedUsers = discussions.map((discussion) => discussion.members[1].member);
+
+    const undiscussedUsers = await User.find({ _id: { $nin: discussedUsers } }).select("fullname profileImage");
+
+    return res.status(200).json({ undiscussedUsers, message: "Undiscussed users fetched successfully!" });
+}

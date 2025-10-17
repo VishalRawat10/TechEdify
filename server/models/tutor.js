@@ -25,10 +25,9 @@ const tutorSchema = new Schema({
         default: true,
         select: false,
     },
-    phone: {
+    contact: {
         type: String,
         select: false,
-
     },
     message: {
         type: String,
@@ -45,7 +44,6 @@ const tutorSchema = new Schema({
     isSuspended: {
         type: Boolean,
         default: false,
-        required: true,
         select: false,
     }
 }, { timestamps: true });

@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { authenticateAdmin, authenticateTutor, isCourseTutor } = require("../middlewares/middlewares");
+const { authenticateTutor, isCourseTutor, isDiscussionMember, isAuthenticated } = require("../middlewares/middlewares");
 const wrapAsync = require("../utils/wrapAsync");
 const tutorController = require("../controllers/tutor.controller");
 const router = express.Router();
@@ -15,37 +15,31 @@ router.route("/login").post(wrapAsync(tutorController.login));
 router.route("/logout").post(authenticateTutor, wrapAsync(tutorController.logout));
 
 // get profile and update profile 
-router.route("/profile").get(authenticateTutor, wrapAsync(tutorController.getProfile)).put(authenticateTutor, wrapAsync(tutorController.updateProfile));
+router.route("/profile").get(authenticateTutor, wrapAsync(tutorController.getProfile)).put(authenticateTutor, upload.single("profileImage"), wrapAsync(tutorController.updateProfile));
 
-// upload profileImage and remove profile image 
-router.route("/profile/profileImage").put(authenticateTutor, upload.single("profileImage"), wrapAsync(tutorController.updateProfileImage)).delete(authenticateTutor, wrapAsync(tutorController.removeProfileImage));
-
-//get tutor courses
-router.route("/courses").get(authenticateTutor, wrapAsync(tutorController.getTutorCourses));
+//dashboard overview
+router.route("/dashboard").get(authenticateTutor, wrapAsync(tutorController.getDashboardStats));
 
 //get tutor courses
-router.route("/courses/:id").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getTutorCourse));
+router.route("/courses").get(authenticateTutor, wrapAsync(tutorController.getCourses));
 
-//get-tutor courses
-router.route("/courses/:id/lectures").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getTutorCourseLectures));
+//get tutor courses that are not discussed
+router.route("/courses/undiscussed").get(authenticateTutor, wrapAsync(tutorController.getUndiscussedCourses));
 
-//get-lectures for tutor
-router.route("/courses/:id/lectures/:lectureId").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getTutorCourseLecture));
+//get tutor course
+router.route("/courses/:id").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getCourse));
 
+//get-tutor course lectures
+router.route("/courses/:id/lectures").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getCourseLectures));
 
+//get-lecture for tutor
+router.route("/courses/:id/lectures/:lectureId").get(authenticateTutor, isCourseTutor, wrapAsync(tutorController.getCourseLecture));
 
-//Admin routes
-// show tutors, create tutor 
-router.route("/").get(authenticateAdmin, wrapAsync(tutorController.getTutors)).post(authenticateAdmin, wrapAsync(tutorController.createTutor));
+//Get tutor discussions
+router.route("/discussions").get(authenticateTutor, wrapAsync(tutorController.getDiscussions));
+router.route("/discussions/:discussionId/messages").get(authenticateTutor, isDiscussionMember, wrapAsync(tutorController.getDiscussionMessages));
+router.route("/messages/unread").get(authenticateTutor, wrapAsync(tutorController.getUnreadMessages));
 
-// show tutor, delete tutor 
-router.route("/:id").get(authenticateAdmin, wrapAsync(tutorController.getTutor)).delete(authenticateAdmin, wrapAsync(tutorController.destroyTutor));
-
-// suspend tutor 
-router.route("/:id/suspend").put(authenticateAdmin, wrapAsync(tutorController.suspendTutor));
-
-//remove suspension from tutor 
-router.route("/:id/unsuspend").put(authenticateAdmin, wrapAsync(tutorController.unsuspendTutor));
-
+router.route("/undiscussed-users").get(authenticateTutor, wrapAsync(tutorController.getUndiscussedUsers));
 
 module.exports = router;

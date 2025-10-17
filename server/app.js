@@ -8,10 +8,10 @@ const coursesRouter = require("./routes/courses.routes.js");
 const messageRouter = require("./routes/message.routes.js");
 const userRouter = require("./routes/user.routes.js");
 const tutorRouter = require("./routes/tutor.routes.js");
-const reviewRouter = require("./routes/review.routes.js");
 const paymentRouter = require("./routes/payment.routes.js");
 const adminRouter = require("./routes/admin.routes.js");
-
+const discussionRouter = require("./routes/discussion.routes.js");
+const queryMessageRouter = require("./routes/queryMessage.routes.js");
 
 //Useful middlewares =============================================
 app.use(cookieParser("dfjjju9efjv jsljsljsjflksjfl"));
@@ -27,10 +27,11 @@ app.use(device.capture());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tutors", tutorRouter);
 app.use("/api/v1/courses", coursesRouter);
-app.use("/api/v1/courses/:courseId/reviews", reviewRouter);
 app.use("/api/v1/messages", messageRouter);
 app.use("/api/v1/payments", paymentRouter);
-app.use("/api/v1/admin", adminRouter)
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/discussions", discussionRouter);
+app.use("/api/v1/query-messages", queryMessageRouter);
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {

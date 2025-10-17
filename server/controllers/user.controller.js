@@ -1,9 +1,12 @@
 const User = require("../models/user.js");
+const Course = require("../models/course.js");
+const Discussion = require("../models/discussion.js");
+const Payment = require("../models/payment.js");
 const BlacklistToken = require("../models/blacklistToken.js");
 const bcrypt = require("bcrypt");
-const { cloudinary } = require("../config/cloudinary.config.js");
 const { generateJwt } = require("../utils/jwtUtils.js");
 const ExpressError = require("../utils/ExpressError.js");
+const { userSchema } = require("../config/joiSchema.config.js");
 
 //SignUp controller
 module.exports.signup = async (req, res, next) => {
@@ -37,7 +40,6 @@ module.exports.signup = async (req, res, next) => {
         message: "Welcome to TechEdify!", user: newUser
     });
 }
-
 
 //Login controller
 module.exports.login = async (req, res, next) => {
@@ -91,85 +93,80 @@ module.exports.logout = async (req, res, next) => {
     return res.status(200).json({ message: "Logged out successfully!" });
 }
 
-// UserProfile controller
+//UserProfile controller
 module.exports.getUserProfile = async (req, res, next) => {
-    const user = await User.findById(req.user._id).populate("enrolledCourses");
+    const user = await User.findById(req.user._id).populate("enrolledCourses", "title thumbnail");
     return res.status(200).json({ user, message: "User fetched successfully!" });
 }
 
-//Profile Image Upload
-module.exports.uploadProfileImage = async (req, res, next) => {
-    const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImage: { url: req.file.path, filename: req.file.filename } } }, { new: true });
-
-    res.status(200).json({ user, message: "Profile image updated successfully." });
-}
-
-//Destroy Profile Image
-module.exports.destroyProfileImage = async (req, res, next) => {
-    const result = await cloudinary.uploader.destroy(req.user.profileImage.filename || `TechEdify/Users/${req.user._id}/profile-image`);
-    if (result.result === "not found") return next(new ExpressError(400, "Image not found!"));
-    const user = await User.findByIdAndUpdate(req.user._id, { $set: { profileImage: { url: "", filename: "" } } }, { new: true });
-    return res.status(200).json({ user, message: "Profile image deleted successfully" });
-}
-
 //Update User Details
-module.exports.updateUser = async (req, res, next) => {
-    const { fullname, email, about, DOB, phone, address } = req.body;
-    if (!fullname || !email) {
-        return next(new ExpressError(400, "Fullname or email missing!"));
+module.exports.updateUserProfile = async (req, res, next) => {
+    const { fullname, email, about, DOB, contact, address, country } = req.body;
+
+    const userDetails = { fullname, email, about, DOB, contact, address, country };
+
+    const { error } = userSchema.validate(userDetails);
+
+    if (error) {
+        let errMsg = error.details.map((el) => el.message).join(" | ");
+        return next(new ExpressError(400, errMsg));
     }
-    const user = await User.findByIdAndUpdate(req.user._id, {
-        $set: {
-            fullname, email, about, DOB, phone, address
+
+    if (req.file) {
+        userDetails.profileImage = {
+            url: req.file.pathname,
+            filename: req.file.filename
         }
-    }, { new: true, runValidators: true });
+    }
+    const user = await User.findByIdAndUpdate(req.user._id, userDetails, { new: true, runValidators: true });
 
     return res.status(200).json({ user, message: "Profile updated successfully." });
 }
 
 //Change password
-module.exports.updatePassword = async (req, res, next) => {
-    const { newPassword, currentPassword } = req.body;
+module.exports.changePassword = async (req, res, next) => {
+    const { newPassword, oldPassword } = req.body;
+
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword)) {
         return next(new ExpressError(400, "Invalid password format!"));
     }
 
     const user = await User.findById(req.user._id).select("password");
 
-    const match = await bcrypt.compare(currentPassword, user.password);
+    const matched = await bcrypt.compare(oldPassword, user.password);
 
-    if (!match) {
+    if (!matched) {
         return next(new ExpressError(403, "Current password is incorrect!"));
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 10);
     await User.findByIdAndUpdate(req.user._id, { password: hashPassword });
-    return res.status(200).json({ message: "Password updated successfully!" });
+    return res.status(200).json({ message: "Password changed successfully!" });
 }
 
+//get all payments
+module.exports.getPayments = async (req, res, next) => {
+    const payments = await Payment.find({ userId: req.user._id, status: "success" }).populate("courseId", "title");
 
-//Suspend user
-module.exports.suspend = async (req, res, next) => {
-    const { userId } = req.params;
-    const user = await User.findByIdAndUpdate(userId, { isSuspended: true }, { new: true, runValidators: true });
-    if (!user) {
-        return next(new ExpressError(400, "User does not exist!"));
-    }
-    return res.status(200).json({ user, message: "User suspended successfully!" });
+    return res.status(200).json({ transactions: payments, message: "Payments fetched successfully!" });
 }
 
-//Unsuspend user
-module.exports.unsuspend = async (req, res, next) => {
-    const { userId } = req.params;
-    const user = await User.findByIdAndUpdate(userId, { isSuspended: false }, { new: true, runValidators: true });
-    if (!user) {
-        return next(new ExpressError(400, "User does not exist!"));
-    }
-    return res.status(200).json({ user, message: "User unsuspended successfully!" });
+//get enrolled courses
+module.exports.getEnrolledCourses = async (req, res, next) => {
+    const courses = await Course.find({ enrolledStudents: req.user._id }).select("title thumbnail");
+    return res.status(200).json({ courses, message: "Enrolled courses fetched successfully!" });
 }
 
-//Get all students
-module.exports.getAllStudents = async (req, res, next) => {
-    const students = await User.find();
-    return res.status(200).json({ students, message: "Students fetched successfully!" });
+module.exports.getUndiscussedTutors = async (req, res, next) => {
+    const discussions = await Discussion.find({ "members.member": req.user._id, type: "private" }).select("members.member");
+
+    let discussedTutors = [];
+
+    discussions.forEach((discussion) => {
+        discussedTutors.push(...discussion.members.map((member) => member.member));
+    });
+
+    const undiscussedTutors = await Tutor.find({ _id: { $nin: discussedTutors } }).select("fullname profileImage");
+
+    return res.status(200).json({ undiscussedTutors });
 }
