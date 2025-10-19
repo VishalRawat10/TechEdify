@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import EnrollButton from "../../components/UI/EnrollButton";
+import EnrollButton from "../../components/ui/EnrollButton";
 import Loader from "../../components/Loader";
 import { apiInstance } from "../../services/axios.config";
 import { UserContext } from "../../context/UserContext";
