@@ -10,7 +10,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { MessageContext } from "../../../context/MessageContext";
 
-export default function TutorAppLayoutSidebar() {
+export default function TutorSidebar() {
   const { setIsLoading } = useContext(TutorContext);
   const { setMessageInfo } = useContext(MessageContext);
   const navigate = useNavigate();

@@ -6,7 +6,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
 import Loader from "../components/Loader";
-import TutorAppLayoutSidebar from "../components/ui/tutor/TutorAppLayoutSidebar";
+import TutorSidebar from "../components/ui/tutor/TutorSidebar";
 import { ThemeContext } from "../context/ThemeContext";
 import Message from "../components/Message";
 import { TutorContext } from "../context/TutorContext";
@@ -28,7 +28,7 @@ export default function TutorAppLayout() {
         />
         {isLoading && <Loader />}
         {/* Sidebar */}
-        <TutorAppLayoutSidebar />
+        <TutorSidebar />
 
         {/* Right section */}
         <section className="h-screen overflow-hidden w-full lg:w-[calc(100vw-17rem)] flex flex-col">
