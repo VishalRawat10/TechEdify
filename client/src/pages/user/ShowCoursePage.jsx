@@ -5,7 +5,7 @@ import EnrollButton from "../../components/UI/EnrollButton";
 import Loader from "../../components/Loader";
 import { apiInstance } from "../../services/axios.config";
 import { UserContext } from "../../context/UserContext";
-import StartLearningBtn from "../../components/UI/StartLearningBtn";
+import StartLearningBtn from "../../components/ui/StartLearningBtn";
 import { MessageContext } from "../../context/MessageContext";
 
 export default function ShowCoursePage() {
