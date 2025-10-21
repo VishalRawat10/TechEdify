@@ -75,11 +75,11 @@ export default function SignupPage() {
     try {
       const res = await signup(userCredentials);
       setIsLoading(false);
-      setMessageInfo(res.data.message, false);
+      setMessageInfo(res?.data?.message || "Welcome to TechEdify!", false);
       navigate("/dashboard");
     } catch (err) {
       setIsLoading(false);
-      setMessageInfo(err.response.data.message);
+      setMessageInfo(err?.response?.data?.message || "Unable to signup!");
     }
   };
 
