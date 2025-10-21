@@ -6,6 +6,7 @@ import { UserProvider } from "../context/UserContext";
 import DiscussionsPage from "../pages/tutor/DiscussionsPage";
 import TutorProfile from "../pages/tutor/TutorProfile";
 
+const NotFoundPage = lazy(() => import("../pages/user/NotFoundPage"));
 const TutorLoginPage = lazy(() => import("../pages/tutor/TutorLoginPage"));
 const TutorDashboard = lazy(() => import("../pages/tutor/TutorDashboard"));
 const EditCourse = lazy(() => import("../pages/tutor/EditCourse"));
@@ -51,6 +52,7 @@ export default function TutorRoutes() {
         <Route path="discussions" element={<DiscussionsPage />} />
         <Route path="profile" element={<TutorProfile />} />
       </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
