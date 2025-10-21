@@ -6,11 +6,12 @@ import Loader from "../../components/Loader";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { MessageContext } from "../../context/MessageContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TutorContext } from "../../context/TutorContext";
 
 export default function TutorLoginPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [tutorCredentials, setTutorCredentials] = useState({
@@ -38,10 +39,10 @@ export default function TutorLoginPage() {
       const res = await tutorLogin(tutorCredentials);
       setIsLoading(false);
       setMessageInfo(res.data.message, false);
-      navigate("/tutor/dashboard");
+      navigate(searchParams.get("redirectTo") || "/tutor/dashboard");
     } catch (err) {
       setIsLoading(false);
-      setMessageInfo(err.response.data.message);
+      setMessageInfo(err.response.data.message || "Welcome back to TechEdify!");
     }
   };
 
