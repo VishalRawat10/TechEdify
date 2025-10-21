@@ -78,7 +78,7 @@ module.exports.login = async (req, res, next) => {
         const tutorToken = jwt.sign({ _id: tutor._id }, process.env.TUTOR_JWT_SECRET_KEY, { expiresIn: process.env.TUTOR_JWT_EXPIRES_IN });
         return res.status(200).cookie("tutorToken", tutorToken, {
             httpOnly: true,
-            sameSite: 'Strict',
+            sameSite: 'None',
             secure: true,
             signed: true,
             maxAge: 24 * 60 * 60 * 1000

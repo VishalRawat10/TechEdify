@@ -79,7 +79,7 @@ module.exports.login = async (req, res, next) => {
             const adminToken = jwt.sign({ _id: admin._id }, process.env.ADMIN_JWT_SECRET_KEY, { expiresIn: process.env.ADMIN_JWT_EXPIRES_IN });
             res.cookie("adminToken", adminToken, {
                 httpOnly: true,
-                sameSite: 'Strict',
+                sameSite: 'None',
                 secure: true,
                 signed: true,
                 maxAge: 10 * 60 * 60 * 1000
@@ -95,7 +95,7 @@ module.exports.login = async (req, res, next) => {
         const adminToken = jwt.sign({ _id: admin._id }, process.env.ADMIN_JWT_SECRET_KEY, { expiresIn: process.env.ADMIN_JWT_EXPIRES_IN || "10h" });
         res.cookie("adminToken", adminToken, {
             httpOnly: true,
-            sameSite: 'Strict',
+            sameSite: 'None',
             secure: true,
             signed: true,
             maxAge: 10 * 60 * 60 * 1000

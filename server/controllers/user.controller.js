@@ -26,7 +26,7 @@ module.exports.signup = async (req, res, next) => {
     res.cookie("token", token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'Strict',
+        sameSite: 'None',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
         signed: true
     });
@@ -66,7 +66,7 @@ module.exports.login = async (req, res, next) => {
             await user.save();
             res.cookie("token", token, {
                 httpOnly: true,
-                sameSite: 'Strict',
+                sameSite: 'None',
                 secure: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
                 signed: true
