@@ -121,9 +121,7 @@ export default function UserDashboard() {
           <div className="relative w-32 h-32 mx-auto md:mx-0">
             <img
               src={
-                profilePreview ||
-                user?.profileImage?.url ||
-                "/default-avatar.png"
+                profilePreview || user?.profileImage?.url || "/images/User.png"
               }
               alt="Profile"
               className="w-32 h-32 rounded-full object-cover border-4 border-main shadow-md"
