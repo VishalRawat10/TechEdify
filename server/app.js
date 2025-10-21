@@ -13,6 +13,10 @@ const adminRouter = require("./routes/admin.routes.js");
 const discussionRouter = require("./routes/discussion.routes.js");
 const queryMessageRouter = require("./routes/queryMessage.routes.js");
 
+if (process.env.NODE_ENV == "production") {
+    app.set("trust proxy", 1);
+}
+
 //Useful middlewares =============================================
 app.use(cookieParser("dfjjju9efjv jsljsljsjflksjfl"));
 app.use(express.json());
