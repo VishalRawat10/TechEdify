@@ -65,7 +65,7 @@ export default function CreateTutorForm({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box className="absolute top-1/2 left-1/2 bg-white dark:bg-dark-card p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md">
+      <Box className="absolute top-1/2 left-1/2 bg-white dark:bg-dark-card p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md max-h-[90vh] overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500">
         <h3 className="text-xl font-semibold mb-4">Create New Tutor</h3>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
