@@ -103,7 +103,7 @@ export default function LoginPage() {
                 </span>
               </AuthInput>
 
-              <AuthButton>Login</AuthButton>
+              <AuthButton disabled={isLoading}>Login</AuthButton>
             </form>
             <div className="text-right ">
               <Link

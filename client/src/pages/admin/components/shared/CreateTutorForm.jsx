@@ -21,6 +21,7 @@ export default function CreateTutorForm({
     personalEmail: "",
     password: "",
     message: "",
+    contact: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +53,7 @@ export default function CreateTutorForm({
         message: "",
       });
       setPreview(null);
-      setMessageInfo(rea.data.message, false);
+      setMessageInfo(res.data.message, false);
     } catch (err) {
       console.error("Error creating tutor:", err);
       setMessageInfo(err.response?.data?.message || "Failed to create tutor.");
@@ -91,6 +92,22 @@ export default function CreateTutorForm({
             placeholder="Enter tutor's personal email..."
             onChange={handleChange}
             type="email"
+            required={true}
+          />
+          <FormInput
+            label="Contact"
+            name="contact"
+            placeholder="Enter tutor's contact number..."
+            onChange={handleChange}
+            type="tel"
+            required={true}
+          />
+          <FormInput
+            label="Password"
+            name="password"
+            placeholder="Enter the password ***"
+            onChange={handleChange}
+            type="text"
             required={true}
           />
           <FormTextarea

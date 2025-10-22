@@ -21,7 +21,7 @@ router.route("/courses/:courseId/publish-status").patch(authenticateAdmin, wrapA
 
 
 //tutors routes
-router.route("/tutors").get(authenticateAdmin, wrapAsync(adminController.getAllTutors));
+router.route("/tutors").get(authenticateAdmin, wrapAsync(adminController.getAllTutors)).post(authenticateAdmin, wrapAsync(adminController.createTutor));
 //delete route logic
 router.route("/tutors/:tutorId/status").patch(authenticateAdmin, wrapAsync(adminController.updateTutorStatus));
 
