@@ -89,12 +89,11 @@ module.exports.login = async (req, res, next) => {
 }
 
 module.exports.logout = async (req, res, next) => {
-    const tutorToken = req.signedCookies.tutorToken;
     const blacklistToken = new BlacklistToken({
-        token: tutorToken,
+        token: req.token,
     });
     await blacklistToken.save();
-    return res.status(200).clearCookie(tutorToken, { signed: true }).json({ message: "Tutor logged out successfully!" });
+    return res.status(200).clearCookie("tutorToken", { signed: true }).json({ message: "Tutor logged out successfully!" });
 }
 
 module.exports.getProfile = async (req, res, next) => {

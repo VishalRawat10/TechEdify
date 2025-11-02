@@ -50,7 +50,7 @@ module.exports.authenticateTutor = async (req, res, next) => {
             return next(new ExpressError(401, "Plase login as tutor to continue!"));
         }
         req.tutor = tutor;
-        req.tutorToken = tutorToken;
+        req.token = tutorToken;
         return next();
     } catch (err) {
         return next(new ExpressError(500, err.message));
