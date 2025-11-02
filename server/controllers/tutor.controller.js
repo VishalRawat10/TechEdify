@@ -106,7 +106,7 @@ module.exports.updateProfile = async (req, res, next) => {
 
     const updatedTutor = { fullname, email, personalEmail, contact, message };
 
-    const error = tutorSchema.validate(updatedTutor);
+    const { error } = tutorSchema.validate(updatedTutor);
     if (error) {
         const errMsg = error.details.map((el) => el.message).join(" | ");
         return next(new ExpressError(400, errMsg));
