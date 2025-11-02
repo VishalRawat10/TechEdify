@@ -14,7 +14,7 @@ module.exports.getPublishedCourses = async (req, res, next) => {
 }
 
 module.exports.getCoursesForHomePage = async (req, res, next) => {
-    const courses = await Course.aggregate([{ $sample: { size: 3 } }]).select("-lectures -enrolledCourses");
+    const courses = await Course.aggregate([{ $sample: { size: 3 } }]);
     return res.status(200).json({ courses, message: "Courses fetched successfully!" });
 }
 
