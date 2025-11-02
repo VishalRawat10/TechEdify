@@ -10,6 +10,7 @@ const Message = require("../models/message");
 const Enrollment = require("../models/enrollment");
 const BlacklistToken = require("../models/blacklistToken");
 const { tutorSchema, courseSchema, lectureSchema } = require("../config/joiSchema.config");
+const { cloudinary } = require("../config/cloudinary.config");
 
 module.exports.getTutorsForHomePage = async (req, res, next) => {
     const tutors = await Tutor.aggregate([{ $sample: { size: 3 } }]);
