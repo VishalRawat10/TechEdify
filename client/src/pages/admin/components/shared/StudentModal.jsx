@@ -11,8 +11,10 @@ import {
   Cake,
   Book,
   AccessTime,
+  Computer,
 } from "@mui/icons-material";
 import { MessageContext } from "../../../../context/MessageContext";
+import { getDate, getDateAndTime } from "../../../../services/utils";
 
 export default function StudentModal({
   open,
@@ -62,7 +64,7 @@ export default function StudentModal({
       await apiInstance.delete(`/admin/students/${student._id}`);
       onAction?.("delete", student._id);
       onClose();
-      setMessageInfo("Student deleted successfully.");
+      setMessageInfo("Student deleted successfully.", false);
     } catch (err) {
       console.error("Error deleting student:", err);
       setMessageInfo("Failed to delete student.");
@@ -73,12 +75,12 @@ export default function StudentModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "30" }}>
       <Box
         className="
           absolute top-1/2 left-1/2 bg-white dark:bg-dark-card
           p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2
-          w-[90%] max-w-2xl overflow-y-auto max-h-[90vh]
+          w-[90%] max-w-2xl overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500
         "
       >
         {/* Header */}
@@ -112,30 +114,38 @@ export default function StudentModal({
           {studentDetails.contact && (
             <p className="flex items-center gap-2">
               <Phone fontSize="small" />
-              <span className="font-medium">Contact:</span>{" "}
+              <span className="font-medium">Contact:</span>
               {studentDetails.contact}
             </p>
           )}
 
-          {studentDetails.dob && (
+          {studentDetails.DOB && (
             <p className="flex items-center gap-2">
               <Cake fontSize="small" />
-              <span className="font-medium">Date of Birth:</span>{" "}
-              {new Date(studentDetails.dob).toLocaleDateString()}
+              <span className="font-medium">Date of Birth:</span>
+              {getDate(studentDetails.DOB)}
             </p>
           )}
 
           <p className="flex items-center gap-2">
             <CalendarToday fontSize="small" />
-            <span className="font-medium">Registered On:</span>{" "}
-            {new Date(studentDetails.createdAt).toLocaleDateString()}
+            <span className="font-medium">Registered On:</span>
+            {getDateAndTime(studentDetails.createdAt, true)}
           </p>
 
-          {studentDetails.lastLogin && (
+          {studentDetails.currLoginTime && (
             <p className="flex items-center gap-2">
               <AccessTime fontSize="small" />
-              <span className="font-medium">Last Login:</span>{" "}
-              {new Date(studentDetails.lastLogin).toLocaleString()}
+              <span className="font-medium">Last Login:</span>
+              {getDateAndTime(studentDetails.currLoginTime)}
+            </p>
+          )}
+
+          {studentDetails.currDevice && (
+            <p className="flex items-center gap-2">
+              <Computer fontSize="small" />
+              <span className="font-medium">Logged in Device:</span>
+              {studentDetails.currDevice}
             </p>
           )}
         </div>

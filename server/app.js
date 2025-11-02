@@ -5,12 +5,10 @@ const cookieParser = require("cookie-parser");
 const device = require('express-device');
 
 const coursesRouter = require("./routes/courses.routes.js");
-const messageRouter = require("./routes/message.routes.js");
 const userRouter = require("./routes/user.routes.js");
 const tutorRouter = require("./routes/tutor.routes.js");
 const paymentRouter = require("./routes/payment.routes.js");
 const adminRouter = require("./routes/admin.routes.js");
-const discussionRouter = require("./routes/discussion.routes.js");
 const queryMessageRouter = require("./routes/queryMessage.routes.js");
 
 if (process.env.NODE_ENV == "production") {
@@ -31,16 +29,14 @@ app.use(device.capture());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tutors", tutorRouter);
 app.use("/api/v1/courses", coursesRouter);
-app.use("/api/v1/messages", messageRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/discussions", discussionRouter);
 app.use("/api/v1/query-messages", queryMessageRouter);
 
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {
     console.log("Error is : ", err);
-    return res.status(err.status || 500).json({ message: err.message || "Internal server error!" });
+    return res.status(err.status || 500).json({ message: err.message || "Internal server error!", statusCode: err.status, error: err });
 });
 
 module.exports = app;

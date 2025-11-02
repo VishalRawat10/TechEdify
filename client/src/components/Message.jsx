@@ -32,7 +32,7 @@ export default function Message() {
       >
         {" "}
         <div className="ml-4 flex justify-center items-center">
-          {message.isError ? <VerifiedIcon /> : <NewReleasesIcon />}
+          {message.isError ? <NewReleasesIcon /> : <VerifiedIcon />}
         </div>
         <p>{message.text}</p>
         <button

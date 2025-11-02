@@ -28,7 +28,6 @@ export default function AddLecture() {
     lectureVideo: null,
     notes: null,
     assignment: null,
-    status: "unpublished",
   });
 
   const [preview, setPreview] = useState({
@@ -273,18 +272,6 @@ export default function AddLecture() {
             required
           />
         </div>
-
-        {/* Status */}
-        <FormSelect
-          value={lectureDetails.status}
-          label="Lecture Status"
-          onChange={handleInputChange}
-          name="status"
-          disabled={isUploading}
-        >
-          <FormOption value="published">Published</FormOption>
-          <FormOption value="unpublished">Unpublished</FormOption>
-        </FormSelect>
 
         {/* Buttons */}
         <div className="flex gap-4 px-2">

@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const Lecture = require("./lecture.js");
+const User = require("./user.js");
+const Enrollment = require("./enrollment.js");
 const { Schema } = mongoose;
 
 
@@ -42,7 +45,6 @@ const courseSchema = new Schema({
     lectures: {
         type: [Schema.Types.ObjectId],
         ref: "Lecture",
-        select: false,
     },
     isPublished: {
         type: Boolean,
@@ -70,13 +72,41 @@ const courseSchema = new Schema({
     enrolledStudents: {
         type: [Schema.Types.ObjectId],
         ref: "User",
-        select: false,
     },
-    type: {
-        type: String,
-        enum: ["Development", "DSA", "Language"],
-        required: true,
+    tutorDetails: {
+        _id: Schema.Types.ObjectId,
+        fullname: {
+            type: String,
+        },
+        profileImage: {
+            url: String,
+            filename: String,
+        }
+
     }
 }, { timestamps: true });
+
+courseSchema.post("findOneAndDelete", async (course, next) => {
+    if (course) {
+        const enrollments = await Enrollment.find({ course: course._id });
+        enrollments.forEach(async (e) => {
+            await Enrollment.findByIdAndUpdate(e._id, {
+                courseDetails: {
+                    _id: course._id,
+                    title: course.title,
+                    thumbnail: course.thumbnail
+                }
+            });
+        });
+        course.lectures.forEach(async (id) => {
+            await Lecture.findByIdAndDelete(id);
+        });
+
+        course.enrolledStudents.forEach(async (id) => {
+            await User.findByIdAndUpdate(id, { $pull: { enrolledCourses: course._id } });
+        });
+    }
+    next();
+});
 
 module.exports = mongoose.model("Course", courseSchema);

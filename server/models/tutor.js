@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-
+const Course = require("./course");
 const tutorSchema = new Schema({
     fullname: {
         type: String,
@@ -13,7 +13,6 @@ const tutorSchema = new Schema({
     personalEmail: {
         type: String,
         required: true,
-        select: false,
     },
     password: {
         type: String,
@@ -23,11 +22,9 @@ const tutorSchema = new Schema({
     isTempPassword: {
         type: Boolean,
         default: true,
-        select: false,
     },
     contact: {
         type: String,
-        select: false,
     },
     message: {
         type: String,
@@ -44,8 +41,23 @@ const tutorSchema = new Schema({
     isSuspended: {
         type: Boolean,
         default: false,
-        select: false,
     }
 }, { timestamps: true });
+
+tutorSchema.post("findOneAndDelete", async (tutor, next) => {
+    if (tutor) {
+        tutor.myCourses.forEach(async (id) => {
+            const course = await Course.findByIdAndUpdate(id, {
+                tutorDetails: {
+                    _id: tutor._id,
+                    fullname: tutor.fullname,
+                    profileImage: tutor.profileImage
+                }
+            });
+        });
+    }
+    next();
+
+})
 
 module.exports = model("Tutor", tutorSchema);

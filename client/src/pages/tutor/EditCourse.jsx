@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,6 +23,7 @@ export default function EditCourse() {
   const { courseId } = useParams();
   const { setIsLoading, isLoading } = useContext(TutorContext);
   const { setMessageInfo } = useContext(MessageContext);
+  const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
   const [courseDetails, setCourseDetails] = useState({});
@@ -104,7 +105,15 @@ export default function EditCourse() {
       });
       formData.append("chapters", JSON.stringify(chapters));
 
-      const res = await apiInstance.put(`/courses/${courseId}`, formData);
+      const res = await apiInstance.put(
+        `/tutors/courses/${courseId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       setCourseDetails(res.data.course);
       setMessageInfo("Course updated successfully!", false);
     } catch (err) {
@@ -117,6 +126,21 @@ export default function EditCourse() {
     }
   };
 
+  const handleCourseDelete = async (e) => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+    setIsLoading(true);
+    try {
+      const res = await apiInstance.delete(`/tutors/courses/${courseId}`);
+      setMessageInfo("Course deleted successfully!", false);
+      navigate(-1);
+    } catch (err) {
+      setMessageInfo(err.response.data.message || "Failed to delete course!");
+      console.log("Error is: ", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const errors = validateCourseDetails(courseDetails);
   const chapterErrors = validateChapters(chapters);
 
@@ -124,10 +148,18 @@ export default function EditCourse() {
     <div className="flex flex-col h-[calc(100dvh-5rem)] py-4 px-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 gap-4 sm:px-10 lg:flex-row lg:px-2 lg:gap-0">
       {/* Edit Course Form */}
       <div className="rounded-xl w-full mx-auto lg:px-6 xl:w-[60rem]">
-        <h1 className="text-xl flex gap-2 items-center text-main font-semibold sm:text-2xl">
-          <EditIcon />
-          Edit Course — {course?.title}
-        </h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-lg flex gap-2 items-center text-main font-semibold sm:text-2xl">
+            <EditIcon />
+            Edit — {course?.title}
+          </h1>
+          <button
+            className="cursor-pointer hover:bg-red-600/10 p-1 rounded-lg "
+            onClick={handleCourseDelete}
+          >
+            <DeleteIcon />
+          </button>
+        </div>
 
         <form
           className="flex flex-col gap-6 mt-4 h-fit overflow-y-auto scrollbar-none lg:h-[calc(100vh-9rem)]"
@@ -201,20 +233,17 @@ export default function EditCourse() {
           />
 
           <FormSelect
-            label="Category"
-            name="type"
-            value={courseDetails.type || ""}
+            label="Status"
+            name="courseStatus"
+            value={courseDetails.courseStatus || ""}
             required
             onChange={handleInputChange}
             errMsg={errors.type}
             disabled={isLoading}
           >
-            <FormOption disabled value="">
-              Choose category
-            </FormOption>
-            <FormOption value="Development">Development</FormOption>
-            <FormOption value="Language">Language</FormOption>
-            <FormOption value="DSA">DSA</FormOption>
+            <FormOption value="upcoming">Upcoming</FormOption>
+            <FormOption value="ongoing">Ongoing</FormOption>
+            <FormOption value="completed">Completed</FormOption>
           </FormSelect>
 
           {/* Chapters Section */}

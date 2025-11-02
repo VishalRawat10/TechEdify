@@ -11,11 +11,6 @@ const lectureSchema = new Schema({
         required: true,
         trim: true
     },
-    publicId: {
-        type: String,
-        // required: true,
-        unique: true,
-    },
     lectureVideo: {
         url: {
             type: String,
@@ -62,12 +57,6 @@ const lectureSchema = new Schema({
         ref: "Tutor",
         required: true,
     },
-    status: {
-        type: String,
-        enum: ["published", "unpublished"],
-        default: "published",
-        required: true
-    }
 }, { timestamps: true });
 
 module.exports = model("Lecture", lectureSchema);

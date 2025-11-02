@@ -28,7 +28,6 @@ export default function MyCourses() {
     getTutorCourses();
   }, []);
 
-  console.log(courses);
   return (
     <div className="px-6 h-[calc(100vh-4.5rem)] flex flex-col gap-6 w-full max-w-[32rem] mx-auto py-4 lg:max-w-[64rem]">
       <span className="flex justify-between items-center">
@@ -81,7 +80,8 @@ const TutorCourseCard = ({ course }) => {
         </p>
         <p className="capitalize">
           <strong>Status: </strong>
-          {course.courseStatus}, {course.publishStatus}
+          {course.courseStatus},{" "}
+          {course.isPublished ? "Published" : "Unpublished"}
         </p>
         <p className="text-xs italic">Lectures: {course.lectures.length}</p>
       </div>

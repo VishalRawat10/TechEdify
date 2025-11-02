@@ -9,8 +9,10 @@ import {
   MenuBook,
   Email,
   AlternateEmail,
+  Phone,
 } from "@mui/icons-material";
 import { MessageContext } from "../../../../context/MessageContext";
+import { getDateAndTime } from "../../../../services/utils";
 
 export default function TutorModal({
   open,
@@ -68,18 +70,18 @@ export default function TutorModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "30" }}>
       <Box
         className="
           absolute top-1/2 left-1/2 bg-white dark:bg-dark-card 
           p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2 
-          w-[90%] max-w-2xl overflow-y-auto max-h-[90vh]
+          w-[90%] max-w-2xl overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500
         "
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
           <img
-            src={tutorDetails.profileImage?.url || "/images/default-avatar.png"}
+            src={tutorDetails.profileImage?.url || "/images/User.png"}
             alt="Tutor"
             className="w-24 h-24 rounded-full object-cover border mb-3"
           />
@@ -113,10 +115,18 @@ export default function TutorModal({
             </p>
           )}
 
+          {tutorDetails.contact && (
+            <p className="flex items-center gap-2">
+              <Phone fontSize="small" />
+              <span className="font-medium">Contact:</span>
+              {tutorDetails.contact}
+            </p>
+          )}
+
           <p className="flex items-center gap-2">
             <CalendarToday fontSize="small" />
             <span className="font-medium">Joined On:</span>
-            {new Date(tutorDetails.createdAt).toLocaleDateString()}
+            {getDateAndTime(tutor.createdAt, true)}
           </p>
 
           <p className="flex items-center gap-2">

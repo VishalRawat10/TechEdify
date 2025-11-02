@@ -18,7 +18,7 @@ export default function TutorCard({ tutor, onAction, setIsLoading }) {
       >
         {/* Profile Image */}
         <img
-          src={tutor.profileImage?.url || "/images/default-avatar.png"}
+          src={tutor.profileImage?.url || "/images/User.png"}
           alt={tutor.fullname}
           className="w-24 h-24 rounded-full object-cover border mb-3"
         />

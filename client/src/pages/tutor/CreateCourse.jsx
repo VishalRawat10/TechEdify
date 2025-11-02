@@ -24,7 +24,6 @@ export default function CreateCourse() {
     description: "",
     alias: "",
     price: "",
-    type: "selected",
   });
   const [chapters, setChapters] = useState([]);
   const [thumbnail, setThumbnail] = useState(null);
@@ -71,7 +70,7 @@ export default function CreateCourse() {
       );
       formData.append("chapters", JSON.stringify(chapters));
 
-      const res = await apiInstance.post("/courses", formData, {
+      const res = await apiInstance.post("/tutors/courses", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -181,29 +180,6 @@ export default function CreateCourse() {
           errMsg={errors.alias}
           onChange={handleInputChange}
         />
-
-        {/* Type */}
-        <FormSelect
-          defaultValue="selected"
-          label="Course Category"
-          name="type"
-          value={courseDetails.type}
-          required
-          onChange={(e) =>
-            setCourseDetails({
-              ...courseDetails,
-              [e.target.name]: e.target.value,
-            })
-          }
-          errMsg={errors.type}
-        >
-          <FormOption disabled value="selected">
-            Choose the category
-          </FormOption>
-          <FormOption value="Development">Development</FormOption>
-          <FormOption value="Language">Language</FormOption>
-          <FormOption value="DSA">DSA</FormOption>
-        </FormSelect>
 
         {/* Chapters */}
         <div className="w-full flex flex-col gap-2">

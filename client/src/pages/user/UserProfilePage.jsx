@@ -66,13 +66,13 @@ export default function UserProfilePage() {
       setShowProfileImage(false);
       setIsLoading(true);
       const res = await deleteProfileImage();
-      setIsLoading(false);
       setMessageInfo(res.data.message, false);
     } catch (err) {
-      setIsLoading(false);
       setMessageInfo(
         err.response.data.message || "Couldn't remove profile image!"
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,11 +105,11 @@ export default function UserProfilePage() {
     try {
       setIsLoading(true);
       const res = await updatePassword(passwords);
-      setIsLoading(false);
       setMessageInfo(res.data.message, false);
     } catch (err) {
-      setIsLoading(false);
       setMessageInfo(err.response.data.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 

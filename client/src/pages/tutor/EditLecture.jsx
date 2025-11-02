@@ -8,6 +8,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 import { TutorContext } from "../../context/TutorContext";
 import { apiInstance } from "../../services/axios.config";
@@ -100,7 +102,7 @@ export default function EditLecture() {
     setIsUploading(true);
     try {
       const res = await apiInstance.put(
-        `/courses/${courseId}/lectures/${currLecture._id}`,
+        `/tutors/courses/${courseId}/lectures/${currLecture._id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -133,6 +135,25 @@ export default function EditLecture() {
     setAssignmentPreview("");
   };
 
+  const handleLectureDelete = async (e) => {
+    if (!window.confirm("Are you sure you want to delete this lecture?"))
+      return;
+    try {
+      setIsLoading(true);
+      const res = await apiInstance.delete(
+        `/tutors/courses/${courseId}/lectures/${currLecture._id}`
+      );
+      setMessageInfo("Lecture deleted successfully!", false);
+    } catch (err) {
+      console.log(err);
+      setMessageInfo(
+        err.response.data.message || "Failed to delete the lecture!"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col py-4 px-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 gap-4 sm:px-10 lg:flex-row lg:px-2 lg:overflow-hidden lg:gap-0">
       {/* Edit course form */}
@@ -141,6 +162,18 @@ export default function EditLecture() {
           {currLecture?.course?.title}
         </h1>
 
+        <div className="flex justify-between">
+          <div className="text-xl">
+            <EditIcon /> Edit Lecture
+          </div>
+          <button
+            className="p-1 hover:bg-red-600/10 rounded-lg cursor-pointer"
+            onClick={handleLectureDelete}
+          >
+            <DeleteIcon fontSize="small" />
+          </button>
+        </div>
+
         {isUploading && (
           <div className="w-full bg-green-500 dark:bg-green-600 rounded-lg p-4 flex gap-4 items-center text-sm text-white">
             <CircularProgress size={"20px"} color="inherit" /> Uploading files…
@@ -148,7 +181,7 @@ export default function EditLecture() {
         )}
 
         <form
-          className="flex flex-col gap-6 h-fit overflow-y-auto scrollbar-none px-2 text-sm py-3 lg:h-[calc(100vh-7rem)]"
+          className="flex flex-col gap-6 h-fit overflow-y-auto scrollbar-none px-2 text-sm py-3 lg:h-[calc(100vh-9rem)]"
           onSubmit={handleFormSubmit}
         >
           <FormInput

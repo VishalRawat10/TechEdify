@@ -46,7 +46,7 @@ export default function ProfileSection({ setIsLoading }) {
   const handleSave = async () => {
     try {
       setLoading(true);
-      setIsLoading(false);
+      setIsLoading(true);
       const data = new FormData();
       data.append("fullname", formData.fullname);
       data.append("email", formData.email);
@@ -239,6 +239,7 @@ export default function ProfileSection({ setIsLoading }) {
               <input
                 type="password"
                 name="oldPassword"
+                placeholder="Enter your old password..."
                 value={passwords.oldPassword}
                 onChange={(e) =>
                   setPasswords((prev) => ({
@@ -256,6 +257,7 @@ export default function ProfileSection({ setIsLoading }) {
               <input
                 type="password"
                 name="newPassword"
+                placeholder="Enter the new password..."
                 value={passwords.newPassword}
                 onChange={(e) =>
                   setPasswords((prev) => ({

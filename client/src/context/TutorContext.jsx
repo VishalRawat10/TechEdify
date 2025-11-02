@@ -29,7 +29,7 @@ export const TutorProvider = ({ children }) => {
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
-        const res = await apiInstance.get("/tutors/messages/unread");
+        const res = await apiInstance.get("/tutors/unread-messages");
         setUnreadMessages(res.data.unreadMessages);
       } catch (err) {
         console.log(err);
@@ -83,7 +83,7 @@ export const TutorProvider = ({ children }) => {
 
   const logoutTutor = async () => {
     const res = await apiInstance.post("/tutors/logout");
-    setTutor(res.data.tutor);
+    setTutor(null);
     return res;
   };
 

@@ -118,7 +118,7 @@ module.exports.logout = async (req, res, next) => {
 
 //Courses Controllers
 module.exports.getAllCourses = async (req, res, next) => {
-    const courses = await Course.find().select("+enrolledStudents +lectures").populate("tutor", "fullname profileImage");
+    const courses = await Course.find().populate("tutor", "fullname profileImage");
 
     return res.status(200).json({ message: "Courses fetched successfully!", courses });
 }
@@ -127,7 +127,7 @@ module.exports.updateCoursePublishStatus = async (req, res, next) => {
     const { courseId } = req.params;
     const { isPublished } = req.body;
 
-    const course = await Course.findByIdAndUpdate(courseId, { isPublished }, { new: true }).populate("tutor", "fullname profileImage").select("+enrolledStudents +lectures");
+    const course = await Course.findByIdAndUpdate(courseId, { isPublished }, { new: true }).populate("tutor", "fullname profileImage");
 
     if (!course) {
         return next(new ExpressError(400, "Course not found!"));
@@ -136,7 +136,7 @@ module.exports.updateCoursePublishStatus = async (req, res, next) => {
     return res.status(200).json({ course, message: isPublished ? "Course is published!" : "Course is unpublished!" });
 }
 
-module.exports.deleteCourse = async (req, res, next) => {
+module.exports.destroyCourse = async (req, res, next) => {
     const { courseId } = req.params;
 
     const course = await Course.findByIdAndDelete(courseId);
@@ -145,7 +145,9 @@ module.exports.deleteCourse = async (req, res, next) => {
         return next(new ExpressError(400, "Course not found!"));
     }
 
-    return res.status(200).json({ message: "Course is deleted!", course });
+    const tutor = await Tutor.findByIdAndUpdate(course.tutor, { $pull: { muCourses: courseId } }, { new: true, runValidators: true });
+
+    return res.status(200).json({ message: "Course deleted successfully!", course, tutor });
 }
 
 //Tutors controllers
@@ -199,6 +201,15 @@ module.exports.updateTutorStatus = async (req, res, next) => {
     return res.status(200).json({ tutor, message: isSuspended ? "Tutor has been suspended successfully!" : "Tutor has been activated successfully!" });
 }
 
+module.exports.destroyTutor = async (req, res, next) => {
+    const { tutorId } = req.params;
+
+    const tutor = await Tutor.findByIdAndDelete(tutorId);
+
+    if (!tutor) return next(new ExpressError(400, "Tutor not found!"));
+    return res.status(200).json({ message: "Tutor deleted successfully!", tutor });
+}
+
 
 //Students/User controllers
 module.exports.getAllStudents = async (req, res, next) => {
@@ -220,8 +231,18 @@ module.exports.updateStudentStatus = async (req, res, next) => {
     return res.status(200).json({ message: `Student is ${isSuspended ? "suspended" : "activated"} successfully!` });
 }
 
+module.exports.destroyStudent = async (req, res, next) => {
+    const { userId } = req.params;
 
-//Stats controller
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) return next(new ExpressError(400, "User not found!"));
+
+    return res.status(200).json({ message: "User deleted successfully!", user });
+}
+
+
+//Stats controller;j
 module.exports.getOverviewStats = async (req, res, next) => {
     const [courses, tutors, students, payments] = await Promise.all([await Course.find(), await Tutor.find(), await User.find(), await Payment.find()]);
 
@@ -266,7 +287,7 @@ module.exports.getEnrollmentStats = async (req, res, next) => {
     // Top course all-time
     const counts = {};
     for (const e of enrollments) {
-        const id = e.course._id.toString();
+        const id = e.course._id.toString() || e.courseDetails._id.toString();
         counts[id] = (counts[id] || 0) + 1;
     }
     const mostEnrolledCourseId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
@@ -281,14 +302,14 @@ module.exports.getEnrollmentStats = async (req, res, next) => {
 
     const thisMonthCounts = {};
     for (const e of thisMonthEnrollments) {
-        const id = e.course._id.toString();
+        const id = e.course._id.toString() || e.courseDetails._id.toString();
         thisMonthCounts[id] = (thisMonthCounts[id] || 0) + 1;
     }
 
     let topCourseThisMonth = null;
     if (Object.keys(thisMonthCounts).length > 0) {
         const topCourseThisMonthId = Object.entries(thisMonthCounts).sort((a, b) => b[1] - a[1])[0][0];
-        topCourseThisMonth = thisMonthEnrollments.find(e => e.course._id.toString() === topCourseThisMonthId).course;
+        topCourseThisMonth = thisMonthEnrollments.find(e => (e.course._id.toString() || e.courseDetails._id.toString()) === topCourseThisMonthId).course;
     }
 
     const topCourseThisMonthEnrollments = thisMonthCounts[topCourseThisMonth?._id?.toString()];

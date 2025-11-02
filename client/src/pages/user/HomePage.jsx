@@ -13,23 +13,23 @@ export default function HomePage() {
   const [tutors, setTutors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { setMessageInfo } = useContext(MessageContext);
+
   useEffect(() => {
-    const getCourses = async () => {
+    (async () => {
       setIsLoading(true);
       try {
-        const res = await apiInstance.get("/courses/home-page");
-        setCourses(res.data.courses);
-
-        const tutorsRes = await apiInstance.get("/tutors/home-page");
-        setTutors(tutorsRes.data.tutors);
-
-        setIsLoading(false);
+        const [courseRes, tutorRes] = await Promise.all([
+          apiInstance.get("/courses/home-page"),
+          apiInstance.get("/tutors/home-page"),
+        ]);
+        setCourses(courseRes.data.courses);
+        setTutors(tutorRes.data.tutors);
       } catch (err) {
-        setIsLoading(false);
         setMessageInfo(err.response.data.message || "Couldn't fetch courses!");
+      } finally {
+        setIsLoading(false);
       }
-    };
-    getCourses();
+    })();
   }, []);
   return (
     <>

@@ -24,14 +24,12 @@ module.exports.courseSchema = Joi.object({
     description: Joi.string().required(),
     price: Joi.number().min(1).required(),
     chapters: Joi.string().required(),
-    type: Joi.string().required()
+    courseStatus: Joi.string().valid("ongoing", "upcoming", "completed").default("upcoming").optional()
 });
 
 module.exports.lectureSchema = Joi.object({
     title: Joi.string().min(2).required(),
     description: Joi.string().required(),
-    status: Joi.string().required(),
-    publicId: Joi.string().required(),
 });
 
 module.exports.queryMessageSchema = Joi.object({

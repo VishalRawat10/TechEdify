@@ -4,7 +4,7 @@ import IconButton from "@mui/material/IconButton";
 import { ThemeContext } from "../../../context/ThemeContext";
 import NotificationModal from "../components/shared/NotificationModal";
 
-export default function Header({ onMenuClick }) {
+export default function Header({ onMenuClick, setIsLoading }) {
   const { changeTheme } = useContext(ThemeContext);
   const [openNotifications, setOpenNotifications] = useState(false);
 
@@ -34,6 +34,7 @@ export default function Header({ onMenuClick }) {
       <NotificationModal
         open={openNotifications}
         onClose={() => setOpenNotifications(false)}
+        setIsLoading={setIsLoading}
       />
     </>
   );

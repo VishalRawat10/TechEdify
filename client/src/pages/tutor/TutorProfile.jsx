@@ -1,9 +1,14 @@
 import { useState, useContext } from "react";
 import { apiInstance } from "../../services/axios.config";
 import { TutorContext } from "../../context/TutorContext";
+import { MessageContext } from "../../context/MessageContext";
 import Avatar from "@mui/material/Avatar";
 import { CircularProgress } from "@mui/material";
-import { MessageContext } from "../../context/MessageContext";
+import {
+  FormInput,
+  FormTextarea,
+  FormButton,
+} from "../../components/FormComponents";
 
 export default function TutorProfile() {
   const { tutor, setTutor, setIsLoading, isLoading } = useContext(TutorContext);
@@ -21,67 +26,80 @@ export default function TutorProfile() {
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
+    confirmPassword: "",
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // Input change handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleFileChange = (e) => {
-    setFormData((prev) => ({ ...prev, profileImage: e.target.files[0] }));
+    setFormData((p) => ({ ...p, profileImage: e.target.files[0] }));
   };
 
+  // === UPDATE PROFILE ===
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("fullname", formData.fullname);
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("personalEmail", formData.personalEmail);
-      formDataToSend.append("contact", formData.contact);
-      formDataToSend.append("message", formData.message);
-      if (formData.profileImage) {
-        formDataToSend.append("profileImage", formData.profileImage);
-      }
-
-      const res = await apiInstance.put("/tutor/profile", formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== null) formDataToSend.append(key, formData[key]);
       });
 
+      const res = await apiInstance.put("/tutors/profile", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setTutor(res.data.tutor);
       setMessageInfo("Profile updated successfully!", false);
     } catch (err) {
-      console.error(err);
-      setMessageInfo(err.response?.data?.message || "Profile update failed.");
+      setMessageInfo(
+        err.response?.data?.message || "Profile update failed.",
+        true
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
+  // === CHANGE PASSWORD ===
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setIsChangingPassword(true);
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessageInfo("New password and confirm password do not match!", true);
+      return;
+    }
 
+    setIsChangingPassword(true);
     try {
-      await apiInstance.put("/tutor/profile/change-password", passwordData);
+      await apiInstance.put("/tutors/profile/change-password", {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
       setMessageInfo("Password updated successfully!", false);
-      setPasswordData({ oldPassword: "", newPassword: "" });
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (err) {
-      console.error(err);
-      setMessageInfo(err.response?.data?.message || "Password update failed.");
+      setMessageInfo(
+        err.response?.data?.message || "Password update failed.",
+        true
+      );
     } finally {
       setIsChangingPassword(false);
     }
   };
 
   return (
-    <section className="overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500 py-6 px-4 sm:px-8 border-b border-gray-300 dark:border-gray-700">
+    <section className="overflow-auto scrollbar-thin scrollbar-thumb-gray-500 py-6 px-4 sm:px-8 border-b border-gray-300 dark:border-gray-700">
       <h2 className="text-2xl font-bold mb-6">Tutor Profile</h2>
 
-      {/* PROFILE UPDATE FORM */}
+      {/* === PROFILE FORM === */}
       <form
         onSubmit={handleUpdateProfile}
         className="bg-light-card dark:bg-dark-card rounded-xl shadow p-6 mb-10"
@@ -91,7 +109,7 @@ export default function TutorProfile() {
             src={
               formData.profileImage
                 ? URL.createObjectURL(formData.profileImage)
-                : tutor?.profileImage?.url || "/images/default-avatar.png"
+                : tutor?.profileImage?.url || "/images/User.png"
             }
             alt="Tutor Avatar"
             sx={{ width: 100, height: 100 }}
@@ -110,136 +128,113 @@ export default function TutorProfile() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input
-              type="text"
-              name="fullname"
-              value={formData.fullname}
-              onChange={handleChange}
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              disabled
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Personal Email
-            </label>
-            <input
-              type="email"
-              name="personalEmail"
-              value={formData.personalEmail}
-              onChange={handleChange}
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Contact</label>
-            <input
-              type="tel"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent"
-            />
-          </div>
-        </div>
-
-        {/* NEW MESSAGE FIELD */}
-        <div className="mt-6">
-          <label className="block text-sm font-medium mb-1">
-            Message to Students
-          </label>
-          <textarea
-            name="message"
-            value={formData.message}
+          <FormInput
+            label="Full Name"
+            name="fullname"
+            value={formData.fullname}
             onChange={handleChange}
-            rows={5}
-            placeholder="Write a message or announcement for your students..."
-            className="w-full p-3 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent resize-none"
+            placeholder="Enter your full name..."
+          />
+          <FormInput
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            disabled
+          />
+          <FormInput
+            label="Personal Email"
+            name="personalEmail"
+            type="email"
+            value={formData.personalEmail}
+            onChange={handleChange}
+            placeholder="Enter your personal email..."
+          />
+          <FormInput
+            label="Contact"
+            name="contact"
+            type="tel"
+            value={formData.contact}
+            onChange={handleChange}
+            placeholder="Enter your contact number..."
           />
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-6 py-2 bg-main text-white rounded-full hover:bg-main/90 transition disabled:opacity-60 cursor-pointer"
-          >
+        <div className="mt-6">
+          <FormTextarea
+            label="Message to Students"
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            placeholder="Write a message or announcement for your students..."
+            rows={5}
+          />
+        </div>
+
+        <div className="mt-6 flex justify-end gap-4">
+          <FormButton type="button" onClick={() => setFormData({ ...tutor })}>
+            Cancel
+          </FormButton>
+          <FormButton type="submit" disabled={isLoading}>
             {isLoading ? <CircularProgress size={20} /> : "Update Profile"}
-          </button>
+          </FormButton>
         </div>
       </form>
 
-      {/* PASSWORD CHANGE FORM */}
+      {/* === PASSWORD FORM === */}
       <form
         onSubmit={handlePasswordChange}
         className="bg-light-card dark:bg-dark-card rounded-xl shadow p-6"
       >
         <h3 className="text-lg font-semibold mb-4">Change Password</h3>
 
-        <div className="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Old Password
-            </label>
-            <input
-              type="password"
-              name="oldPassword"
-              value={passwordData.oldPassword}
-              onChange={(e) =>
-                setPasswordData((p) => ({
-                  ...p,
-                  oldPassword: e.target.value,
-                }))
-              }
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              New Password
-            </label>
-            <input
-              type="password"
-              name="newPassword"
-              value={passwordData.newPassword}
-              onChange={(e) =>
-                setPasswordData((p) => ({
-                  ...p,
-                  newPassword: e.target.value,
-                }))
-              }
-              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-transparent"
-            />
-          </div>
+        <div className="grid sm:grid-cols-3 gap-5">
+          <FormInput
+            label="Old Password"
+            name="oldPassword"
+            type="password"
+            value={passwordData.oldPassword}
+            onChange={(e) =>
+              setPasswordData((p) => ({ ...p, oldPassword: e.target.value }))
+            }
+            placeholder="Enter your current password..."
+            required
+          />
+          <FormInput
+            label="New Password"
+            name="newPassword"
+            type="password"
+            value={passwordData.newPassword}
+            onChange={(e) =>
+              setPasswordData((p) => ({ ...p, newPassword: e.target.value }))
+            }
+            placeholder="Enter new password..."
+            required
+          />
+          <FormInput
+            label="Confirm Password"
+            name="confirmPassword"
+            type="password"
+            value={passwordData.confirmPassword}
+            onChange={(e) =>
+              setPasswordData((p) => ({
+                ...p,
+                confirmPassword: e.target.value,
+              }))
+            }
+            placeholder="Re-enter new password..."
+            required
+          />
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            disabled={isChangingPassword}
-            className="px-6 py-2 bg-main text-white rounded-full hover:bg-main/90 transition disabled:opacity-60 cursor-pointer"
-          >
+          <FormButton type="submit" disabled={isChangingPassword}>
             {isChangingPassword ? (
               <CircularProgress size={20} />
             ) : (
               "Change Password"
             )}
-          </button>
+          </FormButton>
         </div>
       </form>
     </section>

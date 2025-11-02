@@ -43,7 +43,9 @@ export default function DiscussionsPage() {
       } catch (err) {
         setIsLoading(false);
         console.log(err);
-        setMessageInfo(err.response.data.message);
+        setMessageInfo(
+          err.response.data.message || "Failed to load the discussions!"
+        );
       }
     };
 
@@ -62,7 +64,7 @@ export default function DiscussionsPage() {
     const getUndiscussedStudents = async () => {
       setIsLoading(true);
       try {
-        const res = await apiInstance.get("/users/undiscussed");
+        const res = await apiInstance.get("/tutors/undiscussed-users");
         setIsLoading(false);
         setUndiscussedStudents(res.data.undiscussedUsers);
       } catch (err) {
@@ -71,7 +73,7 @@ export default function DiscussionsPage() {
       }
     };
 
-    Promise.allSettled([
+    Promise.all([
       getUndiscussedCourses(),
       getUndiscussedStudents(),
       getDiscussions(),

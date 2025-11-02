@@ -17,6 +17,22 @@ const enrollmentSchema = new Schema({
         ref: "User",
         required: true,
     },
+    courseDetails: {
+        _id: Schema.Types.ObjectId,
+        title: String,
+        thumbnail: {
+            url: String,
+            filename: String
+        }
+    },
+    userDetails: {
+        _id: Schema.Types.ObjectId,
+        fullname: String,
+        profileImage: {
+            url: String,
+            filename: String
+        }
+    }
 }, { timestamps: true });
 
 module.exports = model("Enrollment", enrollmentSchema);

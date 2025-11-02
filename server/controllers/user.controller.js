@@ -1,7 +1,9 @@
 const User = require("../models/user.js");
 const Course = require("../models/course.js");
+const Tutor = require("../models/tutor.js");
 const Discussion = require("../models/discussion.js");
 const Payment = require("../models/payment.js");
+const Message = require("../models/message.js");
 const BlacklistToken = require("../models/blacklistToken.js");
 const bcrypt = require("bcrypt");
 const { generateJwt } = require("../utils/jwtUtils.js");
@@ -64,16 +66,15 @@ module.exports.login = async (req, res, next) => {
             user.currLoginTime = new Date();
             user.isLoggedIn = true;
             await user.save();
-            res.cookie("token", token, {
+
+            user.password = null;
+            return res.status(200).cookie("token", token, {
                 httpOnly: true,
                 sameSite: 'None',
                 secure: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
                 signed: true
-            });
-
-            user.password = null;
-            return res.status(200).json({
+            }).json({
                 message: "User logged in successfully.",
                 user
             });
@@ -136,7 +137,7 @@ module.exports.changePassword = async (req, res, next) => {
     const matched = await bcrypt.compare(oldPassword, user.password);
 
     if (!matched) {
-        return next(new ExpressError(403, "Current password is incorrect!"));
+        return next(new ExpressError(403, "Please enter correct old password!"));
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 10);
@@ -169,4 +170,32 @@ module.exports.getUndiscussedTutors = async (req, res, next) => {
     const undiscussedTutors = await Tutor.find({ _id: { $nin: discussedTutors } }).select("fullname profileImage");
 
     return res.status(200).json({ undiscussedTutors });
+}
+
+//Discussions controllers
+module.exports.getDiscussions = async (req, res, next) => {
+    const discussions = await Discussion.find({ "members.member": req.user._id }).populate("course", "title thumbnail").populate("members.member", "fullname profileImage").populate({ path: "lastMessage", populate: { path: "sender", select: "fullname profileImage createdAt" }, select: "content sender senderModel" });
+
+    return res.status(200).json({ discussions, message: "Discussions fetched successfully!" });
+}
+
+module.exports.getDiscussionMessages = async (req, res, next) => {
+    const { id } = req.params;
+
+    const messages = await Message.find({ discussion: id }).populate("sender", "fullname profileImage").populate({
+        path: "discussion", populate: {
+            path: "course",
+            select: "title thumbnail"
+        }
+    });
+
+    return res.status(200).json({ message: "Messages fetched successfully!", messages });
+}
+
+module.exports.getUnreadMessages = async (req, res, next) => {
+
+    const discussions = (await Discussion.find({ "members.member": req.user._id })).map((discussion) => discussion._id);
+    const unreadMessages = await Message.find({ discussion: { $in: discussions }, sender: { $ne: req.user._id }, readBy: { $ne: req.user._id } }).populate("sender", "fullname profileImage");
+
+    return res.status(200).json({ unreadMessages });
 }

@@ -66,7 +66,7 @@ export default function CourseModal({
       onClose();
     } catch (err) {
       console.error("Error deleting course:", err);
-      setMessageInfo("Failed to delete course.");
+      setMessageInfo("Failed to delete course!");
     } finally {
       setLoading(true);
       setIsLoading(false);
@@ -74,7 +74,7 @@ export default function CourseModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "30" }}>
       <Box className="absolute top-1/2 left-1/2 bg-white dark:bg-dark-card p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-2xl overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500">
         <h2 className="text-2xl font-semibold mb-4">{localCourse.title}</h2>
 

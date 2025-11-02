@@ -37,12 +37,7 @@ export default function CreateTutorForm({
     setLoading(true);
     setIsLoading(true);
     try {
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) data.append(key, value);
-      });
-
-      const res = await apiInstance.post("/admin/tutors", data);
+      const res = await apiInstance.post("/admin/tutors", formData);
       onTutorCreated(res.data.tutor);
       onClose();
       setFormData({
@@ -52,7 +47,6 @@ export default function CreateTutorForm({
         password: "",
         message: "",
       });
-      setPreview(null);
       setMessageInfo(res.data.message, false);
     } catch (err) {
       console.error("Error creating tutor:", err);
@@ -64,7 +58,7 @@ export default function CreateTutorForm({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "30" }}>
       <Box className="absolute top-1/2 left-1/2 bg-white dark:bg-dark-card p-6 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md max-h-[90vh] overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500">
         <h3 className="text-xl font-semibold mb-4">Create New Tutor</h3>
 

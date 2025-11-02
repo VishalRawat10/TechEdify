@@ -20,7 +20,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
-        const res = await apiInstance.get("/messages/unread");
+        const res = await apiInstance.get("/users/unread-messages");
         setUnreadMessages(res.data.unreadMessages);
       } catch (err) {
         console.log(err);

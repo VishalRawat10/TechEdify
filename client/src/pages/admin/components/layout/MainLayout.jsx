@@ -26,7 +26,10 @@ export default function MainLayout({ isLoading, setIsLoading, children }) {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 flex flex-col relative">
-        <Header onMenuClick={() => setIsDrawerOpen(true)} />
+        <Header
+          onMenuClick={() => setIsDrawerOpen(true)}
+          setIsLoading={setIsLoading}
+        />
         <div className="px-6 lg:pt-0 pt-[80px]">{children}</div>
       </main>
     </div>

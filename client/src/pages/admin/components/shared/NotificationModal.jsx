@@ -1,12 +1,14 @@
 import { Modal, Box, Button, Chip } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { apiInstance } from "../../../../services/axios.config";
 import { Done, Close, Mail, Person } from "@mui/icons-material";
+import { MessageContext } from "../../../../context/MessageContext";
 
-export default function NotificationModal({ open, onClose }) {
+export default function NotificationModal({ open, onClose, setIsLoading }) {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false);
+  const { setMessageInfo } = useContext(MessageContext);
 
   // Fetch notifications (user queries)
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function NotificationModal({ open, onClose }) {
 
   const handleStatusChange = async (id, isResolved) => {
     setLoading(true);
+    setIsLoading(true);
     try {
       await apiInstance.patch(`/query-messages/${id}`, {
         isResolved: !isResolved,
@@ -37,6 +40,7 @@ export default function NotificationModal({ open, onClose }) {
       setMessageInfo(err.response.data.message);
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -47,7 +51,7 @@ export default function NotificationModal({ open, onClose }) {
   });
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "30" }}>
       <Box
         className="
           absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2

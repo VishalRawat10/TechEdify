@@ -100,16 +100,12 @@ module.exports.isCourseTutor = async (req, res, next) => {
         id = req.body.courseId;
         console.log(id);
     }
-    const course = await Course.findById(id).select("+lectures");
+    const course = await Course.find({ _id: id, tutor: req.tutor._id }).select("+lectures");
     if (!course) {
-        return next(new ExpressError(400, "Course not found!"));
+        return next(new ExpressError(403, "You are not the tutor of course!"));
     }
 
-    if (course.tutor.toString() === req.tutor._id.toString()) {
-        req.course = course;
-        return next();
-    }
-    return next(new ExpressError(403, "You are not the tutor of course!"));
+    return next();
 }
 
 module.exports.destroyFromCloudinary = (filename) => {

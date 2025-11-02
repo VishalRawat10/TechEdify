@@ -30,28 +30,21 @@ export default function DiscussionsPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const getDiscussions = async () => {
+    (async () => {
       try {
-        const res = await apiInstance.get("/discussions");
-        setDiscussions(res.data.discussions);
+        const [disRes, tutorRes] = await Promise.all([
+          apiInstance.get("/users/discussions"),
+          apiInstance.get("/users/undiscussed-tutors"),
+        ]);
+        setDiscussions(disRes.data.discussions);
+        setUndiscussedTutors(tutorRes.data.undiscussedTutors || []);
       } catch (err) {
         setMessageInfo(
           err.response?.data?.message || "Couldn't load discussions!",
           true
         );
       }
-    };
-
-    const getUndiscussedTutors = async () => {
-      try {
-        const res = await apiInstance.get("/tutors/undiscussed");
-        setUndiscussedTutors(res.data.undiscussedTutors || []);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    Promise.allSettled([getDiscussions(), getUndiscussedTutors()]);
+    })();
   }, []);
 
   useEffect(() => {
@@ -61,7 +54,7 @@ export default function DiscussionsPage() {
       setLoadingMessages(true);
       try {
         const res = await apiInstance.get(
-          `/discussions/${discussionChat._id}/messages`
+          `/users/discussions/${discussionChat._id}/messages`
         );
         setMessages(res.data.messages);
       } catch (err) {
@@ -147,7 +140,7 @@ export default function DiscussionsPage() {
           profileImage: user.profileImage,
           fullname: user.fullname,
         },
-        // ✅ receiver logic fixed
+        //
         receiver:
           discussionChat.type === "private"
             ? discussionChat.members.find((m) => m.member._id !== user._id)
@@ -210,7 +203,7 @@ export default function DiscussionsPage() {
                   "bg-black/10 dark:bg-white/10"
                 }`}
                 onClick={() => openDiscussion(discussion)}
-                key={discussion._id} // ✅ stable key
+                key={discussion._id}
               >
                 <img
                   src={

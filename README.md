@@ -32,7 +32,6 @@ The project is split into two main directories:
 - **Authentication**: JWT with HTTP-only cookies
 - **File Uploads**: Multer & Cloudinary
 - **Payments**: Razorpay (Stripe supported)
-- **Email Service**: Nodemailer
 - **Validation**: Joi with custom middleware
 - **Environment**: dotenv
 
@@ -44,7 +43,6 @@ The project is split into two main directories:
 - **Styling**: Tailwind CSS
 - **UI Components**: Material UI Icons
 - **HTTP Client**: Axios with interceptors
-- **Animations**: Framer Motion (optional)
 - **Build Tool**: Vite (or Create React App)
 
 ---
@@ -56,16 +54,16 @@ The project is split into two main directories:
 ├── 📂 client/                 # Frontend codebase (React)
 │   ├── 📂 src/               # React components, pages, and utilities
 │   ├── .env.example          # Example environment variables
-│   ├── tailwind.config.js    # Tailwind CSS configuration
 │   ├── vite.config.js        # Vite configuration
 │   └── README.md             # Frontend documentation
 ├── 📂 server/                 # Backend codebase (Node.js/Express)
-│   ├── 📂 src/               # API routes, controllers, and models
+│   ├── 📂 routes/               # API routes
+|   ├── 📂 controllers/          # API controllers
+|   ├── 📂 models/               # DB models
 │   ├── .env.example          # Example environment variables
 │   ├── package.json          # Backend dependencies and scripts
 │   └── README.md             # Backend documentation
 ├── .gitignore                # Ignored files (node_modules, .env, etc.)
-├── LICENSE                   # Project license (MIT)
 └── README.md                 # Project overview (this file)
 ```
 
@@ -88,7 +86,7 @@ Follow these steps to set up and run the TechEdify platform locally.
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/techedify.git
+   git clone https://github.com/VishalRawat10/TechEdify.git
    cd techedify
    ```
 
@@ -119,7 +117,7 @@ Follow these steps to set up and run the TechEdify platform locally.
    npm start
    ```
 
-   - The server runs on `http://localhost:5000` by default.
+   - The server runs on `http://localhost:8080` by default.
 
 5. **Start the frontend development server**:
 
@@ -148,8 +146,7 @@ For in-depth setup and API details, refer to the dedicated README files:
 ## 🛠️ Development Tips
 
 - **Environment Variables**: Keep `.env` files secure and never commit them to version control. Use `.gitignore` to exclude them.
-- **Testing**: Add tests for both backend (`server/tests/`) and frontend (`client/tests/`) using Jest or similar frameworks.
-- **API Integration**: Ensure the frontend’s `VITE_API_BASE_URL` matches the backend’s base URL (`http://localhost:5000/api/v1` in development).
+- **API Integration**: Ensure the frontend’s `VITE_API_BASE_URL` matches the backend’s base URL (`http://localhost:8080/api/v1` in development).
 - **Deployment**: Consider hosting the backend on Heroku/AWS and the frontend on Vercel/Netlify for production.
 
 ---
@@ -168,14 +165,8 @@ Please review the coding standards in `server/README.md` and `client/README.md` 
 
 ---
 
-## 📜 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
 ## 📞 Contact
 
-For questions or support, visit the [Contact Page](https://techedify.com/contact) or open an issue on GitHub.
+For questions or support, visit the [Contact Page](https://techedify.vercel.app/contact) or open an issue on GitHub.
 
 ---

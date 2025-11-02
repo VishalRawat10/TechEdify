@@ -18,7 +18,7 @@ export default function CoursesSection({ setIsLoading }) {
       } catch (err) {
         console.error("Failed to load courses:", err);
         setMessageInfo(
-          err?.response?.data?.message || "Unable to load courses!"
+          err?.response?.data?.message || "Failed to load courses!"
         );
       }
     };

@@ -31,7 +31,6 @@ export default function LecturePage() {
       setCurrLecture(res.data.lectures[0]);
       setCourse(res.data.course);
     } catch (err) {
-      console.log(err);
       setMessageInfo(err.response.data.message, true);
       navigate(-1);
     } finally {

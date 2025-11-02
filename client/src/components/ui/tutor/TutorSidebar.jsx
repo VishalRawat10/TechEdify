@@ -35,7 +35,9 @@ export default function TutorSidebar() {
 
   return (
     <section
-      className={`${!hideSidebar && "w-screen h-screen bg-black/30 absolute"}`}
+      className={`${
+        !hideSidebar && "w-screen h-screen bg-black/30 absolute"
+      } lg:w-fit lg:bg-transparent lg:static`}
       onClick={() => setHideSidebar(!hideSidebar)}
     >
       <div
@@ -87,7 +89,7 @@ export default function TutorSidebar() {
         <div className=" mt-auto flex flex-col items-center gap-4 border-t pt-6 mx-4">
           <Link to="/tutor/profile">
             <img
-              src={tutor.profileImage.url || "/images/User.png"}
+              src={tutor?.profileImage?.url || "/images/User.png"}
               alt={tutor.fullname}
               className="h-14 rounded-full aspect-square object-cover hover:opacity-90"
             />

@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { apiInstance } from "../../../../services/axios.config";
 import AdminFilterBar from "../shared/AdminFilterBar";
 import TutorCard from "../shared/TutorCard";
 import CreateTutorForm from "../shared/CreateTutorForm";
 import { Add } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
+import { MessageContext } from "../../../../context/MessageContext";
 
 export default function TutorsSection({ setIsLoading }) {
   const [tutors, setTutors] = useState([]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const { setMessageInfo } = useContext(MessageContext);
 
   // Fetch all tutors
   const fetchTutors = async () => {
@@ -116,6 +118,7 @@ export default function TutorsSection({ setIsLoading }) {
         open={openCreateModal}
         onClose={() => setOpenCreateModal(false)}
         onTutorCreated={handleTutorCreated}
+        setIsLoading={setIsLoading}
       />
     </section>
   );
