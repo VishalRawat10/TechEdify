@@ -75,7 +75,7 @@ export default function SignupPage() {
     try {
       const res = await signup(userCredentials);
       setIsLoading(false);
-      setMessageInfo(res?.data?.message || "Welcome to TechEdify!", false);
+      setMessageInfo("Welcome to TechEdify!", false);
       navigate("/dashboard");
     } catch (err) {
       setIsLoading(false);

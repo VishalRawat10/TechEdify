@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       const res = await login(userCredentials);
       setIsLoading(false);
-      setMessageInfo(res.data.message || "Welcome back to TechEdify!", false);
+      setMessageInfo("Welcome back to TechEdify!", false);
       navigate(searchParams.get("redirectTo") || "/dashboard");
     } catch (err) {
       setIsLoading(false);
