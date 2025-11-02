@@ -109,6 +109,7 @@ export const TutorProvider = ({ children }) => {
         newMessage,
         setNewMessage,
         markRead,
+        setTutor,
       }}
     >
       {children}

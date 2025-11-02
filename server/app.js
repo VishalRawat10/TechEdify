@@ -36,7 +36,7 @@ app.use("/api/v1/query-messages", queryMessageRouter);
 //Error Handling middleware =======================================
 app.use((err, req, res, next) => {
     console.log("Error is : ", err);
-    return res.status(err.status || 500).json({ message: err.message || "Internal server error!", statusCode: err.status, error: err });
+    return res.status(err.status || 500).json({ message: err.message || "Internal server error!", statusCode: err.status || 500, error: err });
 });
 
 module.exports = app;

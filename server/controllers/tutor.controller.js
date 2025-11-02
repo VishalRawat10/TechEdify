@@ -113,12 +113,13 @@ module.exports.updateProfile = async (req, res, next) => {
     }
 
     if (req.file) updatedTutor.profileImage = {
-        url: req.file.pathname,
+        url: req.file.path,
         filename: req.file.filename,
     }
+
     const tutor = await Tutor.findByIdAndUpdate(req.tutor._id, updatedTutor, { new: true });
 
-    return res.status(200).json({ tutor, message: "Profile updated!" });
+    return res.status(200).json({ tutor, message: "Profile updated successfully!" });
 }
 
 
