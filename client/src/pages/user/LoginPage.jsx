@@ -34,12 +34,15 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const res = await login(userCredentials);
-      setIsLoading(false);
-      setMessageInfo("Welcome back to TechEdify!", false);
+      setMessageInfo(
+        `Welcome back to TechEdify, ${res?.data?.user?.fullname}!`,
+        false
+      );
       navigate(searchParams.get("redirectTo") || "/dashboard");
     } catch (err) {
+      setMessageInfo(err.response.data.message || "Failed to login!");
+    } finally {
       setIsLoading(false);
-      setMessageInfo(err.response.data.message || "Unable to login!");
     }
   };
 

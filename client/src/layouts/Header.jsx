@@ -8,9 +8,11 @@ import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 import { MessageContext } from "../context/MessageContext";
 import NavList from "../components/ui/NavList";
+import Loader from "../components/Loader";
 
 export default function Header() {
   const [sideMenu, setSideMenu] = useState(false); //Side menu draw
+  const [isLoading, setIsLoading] = useState(false);
   const { theme, changeTheme } = useContext(ThemeContext);
   const { user, logout } = useContext(UserContext);
   const { setMessageInfo } = useContext(MessageContext);
@@ -18,16 +20,19 @@ export default function Header() {
 
   //logout function
   const handleLogout = () => {
+    setIsLoading(true);
     logout()
       .then((res) => {
         setMessageInfo("Logged out successfully!", false);
         navigate("/");
       })
-      .catch((err) => setMessageInfo("Could not log out!", true));
+      .catch((err) => setMessageInfo("Failed to logout!", true))
+      .finally(() => setIsLoading(false));
   };
 
   return (
     <>
+      {isLoading && <Loader />}
       <header className="z-10 relative font-heading">
         <nav
           className={
