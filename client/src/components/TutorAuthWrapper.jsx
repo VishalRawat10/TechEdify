@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TutorContext } from "../context/TutorContext";
-import Loader from "./Loader";
 import { MessageContext } from "../context/MessageContext";
+import Loader from "./Loader";
 
 export default function TutorAuthWrapper({ children }) {
   const navigate = useNavigate();
@@ -10,14 +10,10 @@ export default function TutorAuthWrapper({ children }) {
   const { setMessageInfo } = useContext(MessageContext);
   const location = useLocation();
 
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (!tutor) {
-    setMessageInfo("Login as tutor to continue!", true);
+  if (!tutor && !loading) {
+    setMessageInfo("Please login as tutor to continue!");
     navigate(`/tutor/login?redirectTo=${location.pathname}`);
   }
 
-  return children;
+  return loading ? <Loader /> : children;
 }

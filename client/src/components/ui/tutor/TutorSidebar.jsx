@@ -23,13 +23,13 @@ export default function TutorSidebar() {
     setIsLoading(true);
     try {
       const res = await logoutTutor();
-      setIsLoading(false);
       setMessageInfo(res.data.message, false);
       navigate("/tutor/login");
     } catch (err) {
       console.log(err);
-      setIsLoading(false);
       setMessageInfo(err.response.data.message, true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
