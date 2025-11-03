@@ -1,13 +1,13 @@
 const express = require("express");
 const multer = require("multer");
-const { authenticateTutor, isCourseTutor, isDiscussionMember, isAuthenticated } = require("../middlewares/middlewares");
+const { authenticateTutor, isCourseTutor, isDiscussionMember } = require("../middlewares/middlewares");
 const wrapAsync = require("../utils/wrapAsync");
 const tutorController = require("../controllers/tutor.controller");
 const router = express.Router();
 const { TutorStorage, CourseStorage } = require("../config/cloudinary.config");
 const tutorUploader = multer({ storage: TutorStorage });
 const courseUploader = multer({ storage: CourseStorage });
-const upload = multer({ dist: "uploads/" })
+const upload = multer({ dest: "uploads/" })
 
 //home-page
 router.route("/home-page").get(wrapAsync(tutorController.getTutorsForHomePage));
