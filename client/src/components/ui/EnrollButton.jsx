@@ -4,16 +4,17 @@ import { apiInstance } from "../../services/axios.config";
 import { MessageContext } from "../../context/MessageContext";
 import { UserContext } from "../../context/UserContext";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function EnrollButton({ className, courseId, setIsLoading }) {
   const { setMessageInfo } = useContext(MessageContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useContext(UserContext);
   const enrollToCourse = async () => {
     if (!user) {
       setMessageInfo("Please login to enroll!", true);
-      return navigate("/login");
+      return navigate(`/login?redirectTo=${location.pathname}`);
     }
     setIsLoading(true);
     try {
@@ -44,11 +45,11 @@ export default function EnrollButton({ className, courseId, setIsLoading }) {
       };
       const rzp = new window.Razorpay(options);
       rzp.open();
-      setIsLoading(false);
     } catch (err) {
       console.log(err);
-      setIsLoading(false);
       setMessageInfo(err.response.data.message, true);
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
