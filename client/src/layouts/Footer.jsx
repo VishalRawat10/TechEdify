@@ -47,24 +47,31 @@ export default function Footer() {
         <h3 className=" font-semibold text-dark-primary">Connect With Us</h3>
         <div className="flex gap-4 lg:flex-col">
           <a
-            href="www.x.com/VishalR06462015"
+            href="https://www.x.com/VishalR06462015"
             className="hover:text-black text-lg w-fit"
+            target="_blank"
           >
             <XIcon />
           </a>
           <a
-            href="www.linkedin.com/in/vishalrawat10052005"
+            href="https://www.linkedin.com/in/vishalrawat10052005"
             className="hover:text-[#0270AD] text-lg w-fit"
+            target="_blank"
           >
             <LinkedInIcon />
           </a>
           <a
             href="https://www.instagram.com/vishal_rwt_10"
             className="hover:text-[#F10669] text-lg w-fit"
+            target="_blank"
           >
             <InstagramIcon />
           </a>
-          <a href="" className="hover:text-[#1152D1] text-lg w-fit">
+          <a
+            href=""
+            className="hover:text-[#1152D1] text-lg w-fit"
+            target="_blank"
+          >
             <FacebookIcon />
           </a>
         </div>
