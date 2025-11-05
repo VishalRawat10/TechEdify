@@ -33,6 +33,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setIsLoading(true);
       try {
         const [coursesRes, transRes] = await Promise.all([
           apiInstance.get("/users/enrolled-courses"),
@@ -68,6 +69,8 @@ export default function UserDashboard() {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
+
       const formData = new FormData();
       Object.keys(updatedUser).forEach((key) =>
         formData.append(key, updatedUser[key])
@@ -76,13 +79,14 @@ export default function UserDashboard() {
 
       const res = await apiInstance.put("/users/profile", formData);
       setUser(res.data.user);
-      setMessageInfo("Profile updated successfully!", false);
-      setIsEditing(false);
+      setMessageInfo("Your profile is updated successfully!", false);
     } catch (err) {
       setMessageInfo(
         err.response?.data?.message || "Failed to update profile!",
         true
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,6 +97,7 @@ export default function UserDashboard() {
       setMessageInfo("Passwords do not match!", true);
       return;
     }
+    setIsLoading(true);
 
     try {
       const res = await apiInstance.patch(
@@ -109,6 +114,8 @@ export default function UserDashboard() {
         err.response?.data?.message || "Failed to change password!",
         true
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -269,6 +276,7 @@ export default function UserDashboard() {
               setPasswords({ ...passwords, oldPassword: e.target.value })
             }
             placeholder="Enter current password..."
+            disabled={isLoading}
             required
           />
           <FormInput
@@ -280,6 +288,7 @@ export default function UserDashboard() {
             onChange={(e) =>
               setPasswords({ ...passwords, newPassword: e.target.value })
             }
+            disabled={isLoading}
             required
           />
           <FormInput
@@ -288,12 +297,17 @@ export default function UserDashboard() {
             type="password"
             value={passwords.confirmPassword}
             placeholder="Confirm new password..."
+            disabled={isLoading}
             onChange={(e) =>
               setPasswords({ ...passwords, confirmPassword: e.target.value })
             }
             required
           />
-          <FormButton type="submit" className="md:col-span-3 w-fit">
+          <FormButton
+            type="submit"
+            className="md:col-span-3 w-fit"
+            disabled={isEditing || isLoading}
+          >
             Update Password
           </FormButton>
         </form>
