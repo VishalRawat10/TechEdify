@@ -32,6 +32,7 @@ export default function DiscussionsPage() {
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
   const messagesContainer = useRef(null);
+  const [sendingMsg, setSendingMsg] = useState(false);
 
   useEffect(() => {
     const getDiscussions = async () => {
@@ -106,6 +107,7 @@ export default function DiscussionsPage() {
         memberId: tutor._id,
       });
       setMessages((prev) => [...prev, receivedMessage]);
+      setSendingMsg(false);
     });
 
     return () => {
@@ -185,6 +187,7 @@ export default function DiscussionsPage() {
       discussionId: discussionChat._id,
       receiver: !discussionChat._id && discussionChat.members[1].member,
     });
+    setSendingMsg(true);
   };
 
   const handleDeleteMessage = (message) => {
@@ -338,12 +341,6 @@ export default function DiscussionsPage() {
                 )}
 
                 {/* messages loading animation */}
-                {loadingMessages && (
-                  <span className="text-[12px] text-main flex flex-col gap-2 items-center justify-center">
-                    <CircularProgress size={"1rem"} />
-                    <p>Loading...</p>
-                  </span>
-                )}
 
                 {/* All messages  */}
                 {messages.map((message, idx) => {
@@ -384,6 +381,12 @@ export default function DiscussionsPage() {
                     </>
                   );
                 })}
+                {(loadingMessages || sendingMsg) && (
+                  <span className="text-[12px] text-main flex flex-col gap-2 items-center justify-center">
+                    <CircularProgress size={"1rem"} />
+                    <p>Loading...</p>
+                  </span>
+                )}
               </div>
               {/* message input box  */}
               <form
