@@ -17,7 +17,7 @@ export default function Footer() {
       {/* Helpful Links  */}
       <div className="flex flex-col gap-2">
         <h3 className=" font-semibold text-dark-primary">Helpful Links</h3>
-        <div className="flex flex-col gap-1 text-xs">
+        <div className="flex flex-col gap-1 text-xm">
           <Link to="/" className="opacity-80 hover:opacity-100 hover:underline">
             Home
           </Link>
@@ -46,16 +46,25 @@ export default function Footer() {
       <div className="flex flex-col gap-2">
         <h3 className=" font-semibold text-dark-primary">Connect With Us</h3>
         <div className="flex gap-4 lg:flex-col">
-          <a href="" className="hover:text-black text-lg">
+          <a
+            href="www.x.com/VishalR06462015"
+            className="hover:text-black text-lg w-fit"
+          >
             <XIcon />
           </a>
-          <a href="" className="hover:text-[#0270AD] text-lg">
+          <a
+            href="www.linkedin.com/in/vishalrawat10052005"
+            className="hover:text-[#0270AD] text-lg w-fit"
+          >
             <LinkedInIcon />
           </a>
-          <a href="" className="hover:text-[#F10669] text-lg">
+          <a
+            href="https://www.instagram.com/vishal_rwt_10"
+            className="hover:text-[#F10669] text-lg w-fit"
+          >
             <InstagramIcon />
           </a>
-          <a href="" className="hover:text-[#1152D1] text-lg">
+          <a href="" className="hover:text-[#1152D1] text-lg w-fit">
             <FacebookIcon />
           </a>
         </div>
