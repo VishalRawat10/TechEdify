@@ -14,7 +14,7 @@ module.exports.getPublishedCourses = async (req, res, next) => {
 }
 
 module.exports.getCoursesForHomePage = async (req, res, next) => {
-    const courses = await Course.aggregate([{ $sample: { size: 3 } }]);
+    const courses = await Course.aggregate([{ $match: { isPublished: true } }, { $sample: { size: 3 } }]);
     return res.status(200).json({ courses, message: "Courses fetched successfully!" });
 }
 
@@ -30,6 +30,9 @@ module.exports.getCourse = async (req, res, next) => {
 
 //enroll
 module.exports.enroll = async (req, res, next) => {
+    if (req.user.isSuspended) {
+        return next(new ExpressError(403, "Your account has been suspended. You can't enroll to any course!"));
+    }
     const { id } = req.params;
     const course = await Course.findById(id).select("+enrolledStudents");
     if (!course) {

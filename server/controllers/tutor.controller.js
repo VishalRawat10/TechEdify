@@ -13,7 +13,7 @@ const { tutorSchema, courseSchema, lectureSchema } = require("../config/joiSchem
 const { cloudinary } = require("../config/cloudinary.config");
 
 module.exports.getTutorsForHomePage = async (req, res, next) => {
-    const tutors = await Tutor.aggregate([{ $sample: { size: 3 } }]);
+    const tutors = await Tutor.aggregate([{ $match: { isSuspended: false } }, { $sample: { size: 3 } }]);
     return res.status(200).json({ tutors, message: "Tutors fetched successfully!" });
 }
 
@@ -141,6 +141,7 @@ module.exports.getCourse = async (req, res, next) => {
 
 //create course 
 module.exports.createCourse = async (req, res, next) => {
+    if (req.tutor.isSuspended) return next(new ExpressError(403, "Your account has been suspended! You can't create new course!"));
     const { title, description, alias, price, chapters } = req.body;
     const { error } = courseSchema.validate({ title, description, alias, price, chapters });
     if (error) {
@@ -201,6 +202,7 @@ module.exports.updateCourse = async (req, res, next) => {
 
 //destory course
 module.exports.destroyCourse = async (req, res, next) => {
+    if (req.tutor.isSuspended) return next(new ExpressError(403, "Your account has been suspended! You can't delete any course!"));
     const { id } = req.params;
 
     const course = await Course.findByIdAndDelete(id);
@@ -228,6 +230,7 @@ module.exports.getCourseLecture = async (req, res, next) => {
 
 //Upload lecture
 module.exports.uploadLecture = async (req, res, next) => {
+    if (req.tutor.isSuspended) return next(new ExpressError(403, "Your account has been suspended! You can't upload lecture!"));
     const { id } = req.params;
 
     if (Object.keys(req.files).length < 2) {
@@ -323,6 +326,7 @@ module.exports.editLecture = async (req, res, next) => {
 }
 
 module.exports.destroyLecture = async (req, res, next) => {
+    if (req.tutor.isSuspended) return next(new ExpressError(403, "Your account has been suspended! You can't delete lecture!"));
     const { id, lectureId } = req.params;
 
     const lecture = await Lecture.findByIdAndDelete(lectureId);

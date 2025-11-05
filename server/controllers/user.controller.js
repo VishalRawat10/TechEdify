@@ -115,7 +115,7 @@ module.exports.updateUserProfile = async (req, res, next) => {
 
     if (req.file) {
         userDetails.profileImage = {
-            url: req.file.pathname,
+            url: req.file.path,
             filename: req.file.filename
         }
     }
