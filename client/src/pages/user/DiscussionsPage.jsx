@@ -24,6 +24,7 @@ export default function DiscussionsPage() {
   const [discussions, setDiscussions] = useState([]);
   const [discussionChat, setDiscussionChat] = useState(null);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [createNewDiscussion, setCreateNewDiscussion] = useState(false);
   const [undiscussedTutors, setUndiscussedTutors] = useState([]);
   const [message, setMessage] = useState("");
@@ -79,6 +80,7 @@ export default function DiscussionsPage() {
         prev ? { ...prev, lastMessage: receivedMessage } : prev
       );
       setMessages((prev) => [...prev, receivedMessage]);
+      setIsLoading(false);
     });
 
     return () => {
@@ -148,6 +150,7 @@ export default function DiscussionsPage() {
             : null,
         message,
       });
+      setIsLoading(true);
     }
   };
 
@@ -277,13 +280,6 @@ export default function DiscussionsPage() {
                 </p>
               )}
 
-              {loadingMessages && (
-                <span className="text-[12px] text-main flex flex-col gap-2 items-center justify-center">
-                  <CircularProgress size={"1rem"} />
-                  <p>Loading...</p>
-                </span>
-              )}
-
               {messages.map((msg, idx) => {
                 const currMsgDate = getDate(msg.createdAt);
                 const prevMsgDate =
@@ -315,6 +311,12 @@ export default function DiscussionsPage() {
                   </div>
                 );
               })}
+              {(loadingMessages || isLoading) && (
+                <span className="text-[12px] text-main flex flex-col gap-2 items-center justify-center">
+                  <CircularProgress size={"1rem"} />
+                  <p>Loading...</p>
+                </span>
+              )}
             </div>
             <form
               className="w-full px-2 mt-auto lg:px-6"
@@ -324,6 +326,7 @@ export default function DiscussionsPage() {
                 placeholder="Type your message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                disabled={isLoading}
               />
             </form>
           </div>
