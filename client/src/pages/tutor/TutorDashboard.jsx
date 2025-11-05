@@ -39,6 +39,7 @@ export default function TutorDashboard() {
 
   useEffect(() => {
     const fetchTutorDashboard = async () => {
+      setIsLoading(true);
       try {
         const res = await apiInstance.get(`/tutors/dashboard`);
         setStats(res.data);
