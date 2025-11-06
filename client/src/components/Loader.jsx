@@ -4,7 +4,7 @@ import styled from "styled-components";
 const Loader = () => {
   return (
     <div
-      className="z-50 w-full flex items-center fixed justify-center h-screen bg-black/60 top-0"
+      className="z-50 w-full flex items-center fixed justify-center h-screen bg-black/60 top-0 left-0 right-0"
       aria-label="Loading"
     >
       <StyledWrapper className="absolute top-30">
