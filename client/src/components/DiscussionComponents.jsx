@@ -2,6 +2,7 @@ import SendIcon from "@mui/icons-material/Send";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 import { getTime } from "../services/utils";
+import { useState } from "react";
 
 export function ChatInput({
   className,
@@ -52,6 +53,7 @@ export function Message({
   senderImage,
   handleDeleteMessage,
 }) {
+  const [showOptions, setShowOptions] = useState(false);
   return (
     <div className={`flex gap-2 w-full ${isMe && "flex-row-reverse"}`}>
       <img
@@ -63,12 +65,15 @@ export function Message({
       />
 
       {/* Message container  */}
-      <div className="group relative cursor-pointer max-w-[90%] lg:max-w-2/3">
+      <div
+        className="relative cursor-pointer max-w-[90%] lg:max-w-2/3"
+        onClick={() => setShowOptions((prev) => !prev)}
+      >
         {/* Delete chat btn  */}
         <button
-          className={`opacity-0 group-hover:opacity-80 cursor-pointer hover:opacity-100 absolute top-1 -left-4 ${
-            !isMe && "hidden"
-          }`}
+          className={`cursor-pointer absolute top-1 -left-4 ${
+            !isMe && "hidden "
+          } ${showOptions ? "opacity-100" : "opacity-0"}`}
           disabled={!isMe}
           onClick={handleDeleteMessage}
         >

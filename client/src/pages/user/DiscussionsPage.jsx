@@ -13,6 +13,7 @@ import { getDateAndTime, getDate } from "../../services/utils";
 import { UserContext } from "../../context/UserContext";
 import { MessageContext } from "../../context/MessageContext";
 import { apiInstance } from "../../services/axios.config";
+import Loader from "../../components/Loader";
 
 export default function DiscussionsPage() {
   const { user, socket, unreadMessages } = useContext(UserContext);
@@ -20,11 +21,12 @@ export default function DiscussionsPage() {
 
   const messagesContainer = useRef(null);
 
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [discussions, setDiscussions] = useState([]);
   const [discussionChat, setDiscussionChat] = useState(null);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [sendingMsg, setSendingMsg] = useState(false);
   const [createNewDiscussion, setCreateNewDiscussion] = useState(false);
   const [undiscussedTutors, setUndiscussedTutors] = useState([]);
   const [message, setMessage] = useState("");
@@ -33,6 +35,7 @@ export default function DiscussionsPage() {
   useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const [disRes, tutorRes] = await Promise.all([
           apiInstance.get("/users/discussions"),
           apiInstance.get("/users/undiscussed-tutors"),
@@ -44,6 +47,8 @@ export default function DiscussionsPage() {
           err.response?.data?.message || "Couldn't load discussions!",
           true
         );
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -60,8 +65,9 @@ export default function DiscussionsPage() {
         setMessages(res.data.messages);
       } catch (err) {
         setMessageInfo("Couldn't fetch the messages!");
+      } finally {
+        setLoadingMessages(false);
       }
-      setLoadingMessages(false);
     };
 
     if (discussionChat._id) {
@@ -71,6 +77,7 @@ export default function DiscussionsPage() {
     // receive message event
     socket.on("receive-message", (receivedMessage) => {
       if (discussionChat._id !== receivedMessage.discussion._id) return;
+      setSendingMsg(false);
       socket.emit("mark-read", {
         memberId: user._id,
         messageId: receivedMessage._id,
@@ -80,7 +87,6 @@ export default function DiscussionsPage() {
         prev ? { ...prev, lastMessage: receivedMessage } : prev
       );
       setMessages((prev) => [...prev, receivedMessage]);
-      setIsLoading(false);
     });
 
     return () => {
@@ -150,7 +156,7 @@ export default function DiscussionsPage() {
             : null,
         message,
       });
-      setIsLoading(true);
+      setSendingMsg(true);
     }
   };
 
@@ -169,6 +175,7 @@ export default function DiscussionsPage() {
 
   return (
     <main className="w-full flex justify-center h-[calc(100vh-var(--header-h))]">
+      {isLoading && <Loader />}
       {/* Sidebar */}
       <section
         className={`w-full flex flex-col gap-6 py-4 ${
@@ -211,8 +218,8 @@ export default function DiscussionsPage() {
                 <img
                   src={
                     discussion.type === "private"
-                      ? discussion.members[0].member.profileImage.url
-                      : discussion.course.thumbnail.url || "/images/User.png"
+                      ? discussion.members[0].member?.profileImage?.url
+                      : discussion?.course?.thumbnail?.url || "/images/User.png"
                   }
                   alt=""
                   className="h-12 rounded-full aspect-square object-cover"
@@ -255,9 +262,9 @@ export default function DiscussionsPage() {
             <img
               src={
                 discussionChat.type === "private"
-                  ? discussionChat.members[0].member.profileImage.url ||
+                  ? discussionChat.members[0].member?.profileImage?.url ||
                     "/images/User.png"
-                  : discussionChat.course.thumbnail.url || "/images/User.png"
+                  : discussionChat?.course?.thumbnail?.url || "/images/User.png"
               }
               alt=""
               className="h-12 rounded-full aspect-square object-cover"
@@ -311,7 +318,7 @@ export default function DiscussionsPage() {
                   </div>
                 );
               })}
-              {(loadingMessages || isLoading) && (
+              {(loadingMessages || sendingMsg) && (
                 <span className="text-[12px] text-main flex flex-col gap-2 items-center justify-center">
                   <CircularProgress size={"1rem"} />
                   <p>Loading...</p>
@@ -326,7 +333,7 @@ export default function DiscussionsPage() {
                 placeholder="Type your message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                disabled={isLoading}
+                disabled={sendingMsg}
               />
             </form>
           </div>

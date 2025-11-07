@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Add from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -21,6 +22,7 @@ export default function DiscussionsPage() {
   const { tutor, setIsLoading, socket, isLoading, unreadMessages } =
     useContext(TutorContext);
   const { setMessageInfo } = useContext(MessageContext);
+  const navigate = useNavigate();
 
   const [undiscussedCourses, setUndiscussedCourses] = useState([]);
   const [undiscussedStudents, setUndiscussedStudents] = useState([]);
@@ -35,50 +37,24 @@ export default function DiscussionsPage() {
   const [sendingMsg, setSendingMsg] = useState(false);
 
   useEffect(() => {
-    const getDiscussions = async () => {
+    (async () => {
       setIsLoading(true);
       try {
-        const res = await apiInstance.get("/tutors/discussions");
-        setIsLoading(false);
-        setDiscussions(res.data.discussions);
+        const [res1, res2, res3] = await Promise.all([
+          apiInstance.get("/tutors/discussions"),
+          apiInstance.get("/tutors/courses/undiscussed"),
+          apiInstance.get("/tutors/undiscussed-users"),
+        ]);
+        setDiscussions(res1.data.discussions);
+        setUndiscussedCourses(res2.data.undiscussedCourses);
+        setUndiscussedStudents(res3.data.undiscussedUsers);
       } catch (err) {
+        setMessageInfo("Failed to load discussions data!");
+        navigate(-1);
+      } finally {
         setIsLoading(false);
-        console.log(err);
-        setMessageInfo(
-          err.response.data.message || "Failed to load the discussions!"
-        );
       }
-    };
-
-    const getUndiscussedCourses = async () => {
-      setIsLoading(true);
-      try {
-        const res = await apiInstance.get("/tutors/courses/undiscussed");
-        setIsLoading(false);
-        setUndiscussedCourses(res.data.undiscussedCourses);
-      } catch (err) {
-        setIsLoading(false);
-        console.log(err);
-      }
-    };
-
-    const getUndiscussedStudents = async () => {
-      setIsLoading(true);
-      try {
-        const res = await apiInstance.get("/tutors/undiscussed-users");
-        setIsLoading(false);
-        setUndiscussedStudents(res.data.undiscussedUsers);
-      } catch (err) {
-        setIsLoading(false);
-        console.log(err);
-      }
-    };
-
-    Promise.all([
-      getUndiscussedCourses(),
-      getUndiscussedStudents(),
-      getDiscussions(),
-    ]);
+    })();
   }, []);
 
   useEffect(() => {
@@ -91,11 +67,12 @@ export default function DiscussionsPage() {
         const res = await apiInstance.get(
           `/tutors/discussions/${discussionChat._id}/messages`
         );
-        setLoadingMessages(false);
+
         setMessages(res.data.messages);
       } catch (err) {
-        setLoadingMessages(false);
         setMessageInfo("Couldn't load messages!");
+      } finally {
+        setLoadingMessages(false);
       }
     };
     getMessages();
@@ -135,7 +112,7 @@ export default function DiscussionsPage() {
       });
 
       return () => {
-        socket.off("receive-message");
+        socket.off("add-discussion");
         socket.off("join-discussion");
         socket.off("delete-message");
       };
@@ -339,8 +316,6 @@ export default function DiscussionsPage() {
                     Created on {getDateAndTime(discussionChat?.createdAt)}
                   </p>
                 )}
-
-                {/* messages loading animation */}
 
                 {/* All messages  */}
                 {messages.map((message, idx) => {
