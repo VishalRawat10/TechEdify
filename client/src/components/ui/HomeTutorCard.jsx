@@ -3,7 +3,7 @@ export default function HomeTutorCard({ tutor }) {
     <div>
       <div className="w-full md:w-[20rem] flex items-center md:flex-col gap-4">
         <img
-          src={tutor?.thumbnail?.url || "/images/User.png"}
+          src={tutor?.profileImage?.url || "/images/User.png"}
           alt=""
           loading="lazy"
           className="object-cover aspect-square w-24 md:w-[10rem] rounded-full"
