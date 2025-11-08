@@ -14,7 +14,15 @@ module.exports.getPublishedCourses = async (req, res, next) => {
 }
 
 module.exports.getCoursesForHomePage = async (req, res, next) => {
-    const courses = await Course.aggregate([{ $match: { isPublished: true } }, { $sample: { size: 3 } }]);
+    const courses = await Course.aggregate([{ $match: { isPublished: true } }, { $sample: { size: 3 } }, {
+        $lookup: {
+            from: "tutors",
+            localField: "tutor",
+            foreignField: "_id",
+            as: "tutor"
+        }
+    },
+    { $unwind: "$tutor" }]);
     return res.status(200).json({ courses, message: "Courses fetched successfully!" });
 }
 
