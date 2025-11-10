@@ -69,16 +69,15 @@ export default function TutorsSection({ setIsLoading }) {
       {/* Header with button */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
         <h3 className="text-2xl font-bold mb-3 sm:mb-0">All Tutors</h3>
-        <IconButton
-          color="primary"
+        <button
           onClick={() => setOpenCreateModal(true)}
-          className="bg-main text-white hover:bg-main/80 transition rounded-lg"
+          className="bg-main text-white hover:bg-main/80 transition rounded-lg px-2 py-1 cursor-pointer"
         >
-          <Add className="text-white" />
-          <span className="ml-2 font-medium text-sm hidden sm:inline">
+          <Add className="text-black dark:text-white" />
+          <span className="ml-1 font-medium text-sm hidden sm:inline">
             Create New Tutor
           </span>
-        </IconButton>
+        </button>
       </div>
 
       {/* Filters and Search */}

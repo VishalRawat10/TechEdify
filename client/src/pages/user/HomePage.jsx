@@ -40,7 +40,7 @@ export default function HomePage() {
       <section className="px-4 py-8 md:px-20 md:py-20 bg-[url('/images/section1-bg.jpg')] bg-cover bg-no-repeat flex flex-col-reverse md:flex-row items-center justify-between gap-6 text-dark-primary">
         <div className="md:w-1/2">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Learn. Code. Grow. <br /> Welcome to{" "}
+            Learn. Code. Grow. <br /> Welcome to
             <span className="text-main">TechEdify</span>.
           </h1>
           <p className="text-dark-secondary text-base italic leading-relaxed">

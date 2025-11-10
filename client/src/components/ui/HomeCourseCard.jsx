@@ -19,9 +19,6 @@ export default function HomeCourseCard({ course }) {
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100 line-clamp-2">
             {course?.title || "Untitled Course"}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-            {course?.description}
-          </p>
         </div>
 
         {/* Tutor Info & CTA */}

@@ -76,6 +76,7 @@ export default function DiscussionsPage() {
 
     // receive message event
     socket.on("receive-message", (receivedMessage) => {
+      console.log("Message recieed");
       if (discussionChat._id !== receivedMessage.discussion._id) return;
       setSendingMsg(false);
       socket.emit("mark-read", {
@@ -114,9 +115,20 @@ export default function DiscussionsPage() {
         );
       });
 
+      socket.on("message-sent", (message) => {
+        setSendingMsg(false);
+      });
+
+      socket.on("discussion-created", (discussion) => {
+        setDiscussionChat(discussion);
+        setDiscussions((prev) => [...prev, discussion]);
+      });
+
       return () => {
         socket.off("delete-message");
         socket.off("join-discussion");
+        socket.off("message-sent");
+        socket.off("discussion-created");
       };
     }
   }, [socket]);
@@ -218,7 +230,8 @@ export default function DiscussionsPage() {
                 <img
                   src={
                     discussion.type === "private"
-                      ? discussion.members[0].member?.profileImage?.url
+                      ? discussion.members[0].member?.profileImage?.url ||
+                        "/images/User.png"
                       : discussion?.course?.thumbnail?.url || "/images/User.png"
                   }
                   alt=""

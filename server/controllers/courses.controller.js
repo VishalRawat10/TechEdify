@@ -2,15 +2,9 @@ const Course = require("../models/course");
 const Lecture = require("../models/lecture");
 const ExpressError = require("../utils/ExpressError");
 
-module.exports.getAllCourses = async (req, res, next) => {
-    const courses = await Course.find().select("+enrolledStudents").populate("tutor", "fullname profileImage");
-
-    return res.status(200).json({ message: "Courses fetched successfully!", courses });
-}
-
 module.exports.getPublishedCourses = async (req, res, next) => {
-    const courses = await Course.find({ isPublished: true }).select("-enrolledStudents -lectures").populate("tutor");
-    return res.status(200).json({ courses });
+    const courses = await Course.find({ isPublished: true }).select("-enrolledStudents -lectures").populate("tutor", "fullname profileImage");
+    return res.status(200).json({ courses, message: "Courses fetched successfully!" });
 }
 
 module.exports.getCoursesForHomePage = async (req, res, next) => {

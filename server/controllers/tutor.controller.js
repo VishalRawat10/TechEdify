@@ -22,48 +22,62 @@ module.exports.getDashboardStats = async (req, res, next) => {
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const [courses, publishedCourses, unpublishedCourses, ongoingCourses, completedCourses, upcomingCourses, lastMonthCourses, thisMonthCourses] = await Promise.all([
-        await Course.find({ tutor: req.tutor._id }),
-        await Course.find({ tutor: req.tutor._id, isPublished: true }),
-        await Course.find({ tutor: req.tutor._id, isPublished: false }),
-        await Course.find({ tutor: req.tutor._id, courseStatus: "ongoing" }),
-        await Course.find({ tutor: req.tutor._id, courseStatus: "completed" }),
-        await Course.find({ tutor: req.tutor._id, courseStatus: "upcoming" }),
-        await Course.find({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
-        await Course.find({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
+    // Fetch course counts
+    const [
+        totalCourses,
+        publishedCourses,
+        unpublishedCourses,
+        ongoingCourses,
+        completedCourses,
+        upcomingCourses,
+        lastMonthCourses,
+        thisMonthCourses
+    ] = await Promise.all([
+        Course.countDocuments({ tutor: req.tutor._id }),
+        Course.countDocuments({ tutor: req.tutor._id, isPublished: true }),
+        Course.countDocuments({ tutor: req.tutor._id, isPublished: false }),
+        Course.countDocuments({ tutor: req.tutor._id, courseStatus: "ongoing" }),
+        Course.countDocuments({ tutor: req.tutor._id, courseStatus: "completed" }),
+        Course.countDocuments({ tutor: req.tutor._id, courseStatus: "upcoming" }),
+        Course.countDocuments({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
+        Course.countDocuments({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
     ]);
 
-    const coursesIds = courses.map((course) => course._id);
+    // Get all course IDs for this tutor (for enrollments)
+    const courseIds = await Course.find({ tutor: req.tutor._id }).distinct("_id");
 
-    const [enrollments, lastMonthEnrollements, thisMonthEnrollments, lastMonthLectures, thisMonthLectures] = await Promise.all([
-        await Enrollment.find({ course: { $in: coursesIds } }),
-        await Enrollment.find({
-            course: { $in: coursesIds }, createdAt: { $gte: lastMonth, $lt: thisMonth }
-        }),
-        await Enrollment.find({
-            course: { $in: coursesIds }, createdAt: { $gte: thisMonth }
-        }),
-        await Lecture.find({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
-        await Lecture.find({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
+    // Enrollment and lecture counts
+    const [
+        totalEnrollments,
+        lastMonthEnrollments,
+        thisMonthEnrollments,
+        lastMonthLectures,
+        thisMonthLectures
+    ] = await Promise.all([
+        Enrollment.countDocuments({ course: { $in: courseIds } }),
+        Enrollment.countDocuments({ course: { $in: courseIds }, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
+        Enrollment.countDocuments({ course: { $in: courseIds }, createdAt: { $gte: thisMonth } }),
+        Lecture.countDocuments({ tutor: req.tutor._id, createdAt: { $gte: lastMonth, $lt: thisMonth } }),
+        Lecture.countDocuments({ tutor: req.tutor._id, createdAt: { $gte: thisMonth } })
     ]);
 
     return res.status(200).json({
-        totalCourses: courses.length,
-        publishedCourses: publishedCourses.length,
-        unpublishedCourses: unpublishedCourses.length,
-        ongoingCourses: ongoingCourses.length,
-        completedCourses: completedCourses.length,
-        upcomingCourses: upcomingCourses.length,
-        lastMonthCourses: lastMonthCourses.length,
-        thisMontCourses: thisMonthCourses.length,
-        totalEnrollments: enrollments.length,
-        lastMonthEnrollements: lastMonthEnrollements.length,
-        thisMonthEnrollments: thisMonthEnrollments.length,
-        thisMonthLectures: thisMonthLectures.length,
-        lastMonthLectures: lastMonthLectures.length
+        totalCourses,
+        publishedCourses,
+        unpublishedCourses,
+        ongoingCourses,
+        completedCourses,
+        upcomingCourses,
+        lastMonthCourses,
+        thisMonthCourses,
+        totalEnrollments,
+        lastMonthEnrollments,
+        thisMonthEnrollments,
+        lastMonthLectures,
+        thisMonthLectures
     });
+};
 
-}
 
 module.exports.login = async (req, res, next) => {
     const { email, password } = req.body;

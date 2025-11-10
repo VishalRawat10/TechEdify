@@ -274,7 +274,7 @@ export const SearchBox = ({
 }) => {
   return (
     <div
-      className={`flex gap-2 items-center rounded-lg border-1 w-full px-2 py-1 text-sm ${className}`}
+      className={`flex gap-2 items-center rounded-lg border-1 w-full px-2 py-2 text-base ${className}`}
     >
       <label htmlFor={name}>
         <SearchIcon fontSize="small" />
@@ -282,12 +282,12 @@ export const SearchBox = ({
       <input
         type="search"
         id={name}
-        className="focus:outline-none w-full"
+        className="focus:outline-none w-full placeholder:text-gray-500 dark:placeholder:text-gray-400"
         name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        aria-label="S"
+        aria-label="search"
       />
     </div>
   );

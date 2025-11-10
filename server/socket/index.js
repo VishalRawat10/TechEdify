@@ -66,6 +66,7 @@ module.exports.initializeSocket = (io) => {
                 await discussion.populate("members.member", "fullname profileImage");
 
                 socket.join(discussion._id.toString());
+                socket.emit("discussion-created", discussion);
                 const receiverSocketId = isTutor ? onlineUsers.get(receiver._id) : onlineTutors.get(receiver._id);
                 socket.to(receiverSocketId).emit("join-discussion", discussion);
             } else {
@@ -100,6 +101,8 @@ module.exports.initializeSocket = (io) => {
 
             //sending message to all the members of discussion including the sender
             io.to(discussion._id.toString()).emit("receive-message", message);
+
+            socket.emit("message-sent", message);
 
             //sending newMessage to all the members of discussion excluding the sender
             socket.to(discussion._id.toString()).emit("new-message", message);

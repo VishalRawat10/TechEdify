@@ -244,76 +244,84 @@ module.exports.destroyStudent = async (req, res, next) => {
 
 //Stats controller;j
 module.exports.getOverviewStats = async (req, res, next) => {
-    const [courses, tutors, students, payments] = await Promise.all([await Course.find(), await Tutor.find(), await User.find(), await Payment.find()]);
 
-    const totalRevenue = payments.reduce((sum, payment) => {
-        return sum + payment.amount;
-    }, 0)
+    const [totalCourses, totalTutors, totalStudents, revenueAgg] = await Promise.all([
+        Course.countDocuments(),
+        Tutor.countDocuments(),
+        User.countDocuments(),
+        Payment.aggregate([
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ])
+    ]);
 
-    return res.status(200).json({ totalCourses: courses.length, totalTutors: tutors.length, totalStudents: students.length, totalRevenue })
-}
+    const totalRevenue = revenueAgg.length > 0 ? revenueAgg[0].total : 0;
+
+    return res.status(200).json({
+        totalCourses,
+        totalTutors,
+        totalStudents,
+        totalRevenue
+    });
+};
+
 
 module.exports.getEnrollmentStats = async (req, res, next) => {
-    const enrollments = await Enrollment.find().populate("course", "title thumbnail");
 
-    const totalEnrollments = enrollments.length;
     const now = new Date();
-    const currMonth = now.getMonth();
+    const currMonth = now.getMonth(); // 0–11
     const currYear = now.getFullYear();
 
-    // Enrollments last month
-    const enrollmentsLastMonth = enrollments.reduce((sum, enrollment) => {
-        const date = new Date(enrollment.createdAt);
-        const month = date.getMonth();
-        const year = date.getFullYear();
+    // Handle previous month/year (for January)
+    const prevMonth = currMonth === 0 ? 11 : currMonth - 1;
+    const prevMonthYear = currMonth === 0 ? currYear - 1 : currYear;
 
-        // Handle January (previous month = December of last year)
-        if (
-            (currMonth === 0 && month === 11 && year === currYear - 1) ||
-            (month === currMonth - 1 && year === currYear)
-        ) {
-            return sum + 1;
-        }
-        return sum;
-    }, 0);
+    // Helper to get start & end of month
+    const getMonthRange = (month, year) => {
+        const start = new Date(year, month, 1, 0, 0, 0);
+        const end = new Date(year, month + 1, 0, 23, 59, 59);
+        return { start, end };
+    };
 
-    // Enrollments this month
-    const enrollmentsThisMonth = enrollments.reduce((sum, enrollment) => {
-        const date = new Date(enrollment.createdAt);
-        if (date.getMonth() === currMonth && date.getFullYear() === currYear) return sum + 1;
-        return sum;
-    }, 0);
+    const { start: startThisMonth, end: endThisMonth } = getMonthRange(currMonth, currYear);
+    const { start: startLastMonth, end: endLastMonth } = getMonthRange(prevMonth, prevMonthYear);
 
-    // Top course all-time
-    const counts = {};
-    for (const e of enrollments) {
-        const id = e.course._id.toString() || e.courseDetails._id.toString();
-        counts[id] = (counts[id] || 0) + 1;
+    // Count enrollments
+    const [totalEnrollments, enrollmentsThisMonth, enrollmentsLastMonth] = await Promise.all([
+        Enrollment.countDocuments(),
+        Enrollment.countDocuments({ createdAt: { $gte: startThisMonth, $lte: endThisMonth } }),
+        Enrollment.countDocuments({ createdAt: { $gte: startLastMonth, $lte: endLastMonth } })
+    ]);
+
+    const topAllTimeAgg = await Enrollment.aggregate([
+        { $group: { _id: "$course", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 1 }
+    ]);
+
+    let topCourseAllTime = null;
+    let topCourseAllTimeEnrollments = 0;
+
+    if (topAllTimeAgg.length > 0) {
+        const courseId = topAllTimeAgg[0]._id;
+        topCourseAllTimeEnrollments = topAllTimeAgg[0].count;
+        topCourseAllTime = await Course.findById(courseId).select("title thumbnail");
     }
-    const mostEnrolledCourseId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-    const topCourseAllTime = enrollments.find(e => e.course._id.toString() === mostEnrolledCourseId).course;
-    const topCourseAllTimeEnrollments = counts[mostEnrolledCourseId];
 
-    // Top course this month
-    const thisMonthEnrollments = enrollments.filter(e => {
-        const date = new Date(e.createdAt);
-        return date.getMonth() === currMonth && date.getFullYear() === currYear;
-    });
-
-    const thisMonthCounts = {};
-    for (const e of thisMonthEnrollments) {
-        const id = e.course._id.toString() || e.courseDetails._id.toString();
-        thisMonthCounts[id] = (thisMonthCounts[id] || 0) + 1;
-    }
+    const topThisMonthAgg = await Enrollment.aggregate([
+        { $match: { createdAt: { $gte: startThisMonth, $lte: endThisMonth } } },
+        { $group: { _id: "$course", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 1 }
+    ]);
 
     let topCourseThisMonth = null;
-    if (Object.keys(thisMonthCounts).length > 0) {
-        const topCourseThisMonthId = Object.entries(thisMonthCounts).sort((a, b) => b[1] - a[1])[0][0];
-        topCourseThisMonth = thisMonthEnrollments.find(e => (e.course._id.toString() || e.courseDetails._id.toString()) === topCourseThisMonthId).course;
+    let topCourseThisMonthEnrollments = 0;
+
+    if (topThisMonthAgg.length > 0) {
+        const courseId = topThisMonthAgg[0]._id;
+        topCourseThisMonthEnrollments = topThisMonthAgg[0].count;
+        topCourseThisMonth = await Course.findById(courseId).select("title thumbnail");
     }
-
-    const topCourseThisMonthEnrollments = thisMonthCounts[topCourseThisMonth?._id?.toString()];
-
     return res.status(200).json({
         totalEnrollments,
         enrollmentsLastMonth,
@@ -323,29 +331,52 @@ module.exports.getEnrollmentStats = async (req, res, next) => {
         topCourseAllTimeEnrollments,
         topCourseThisMonthEnrollments
     });
+};
 
-
-}
 
 module.exports.getMonthlyGrowth = async (req, res, next) => {
-    const [courses, tutors, students] = await Promise.all([await Course.find(), await Tutor.find(), await User.find()]);
+    const currDate = new Date();
+    const currMonth = currDate.getMonth(); // 0–11
+    const currYear = currDate.getFullYear();
 
-    const currMonth = new Date().getMonth();
-    const currYear = new Date().getFullYear();
+    // Handle previous month and year (January case)
+    const prevMonth = currMonth === 0 ? 11 : currMonth - 1;
+    const prevMonthYear = currMonth === 0 ? currYear - 1 : currYear;
 
-    const tutorsLastMonth = tutors.filter((tutor) => new Date(tutor.createdAt).getFullYear === currYear && new Date(tutor.createdAt).getMonth() === currMonth - 1).length;
+    // Helper to get start & end of a month
+    const getMonthRange = (month, year) => {
+        const start = new Date(year, month, 1, 0, 0, 0);
+        const end = new Date(year, month + 1, 0, 23, 59, 59);
+        return { start, end };
+    };
 
-    const tutorsThisMonth = tutors.filter((tutor) => new Date(tutor.createdAt).getFullYear === currYear && new Date(tutor.createdAt).getMonth() === currMonth).length;
+    // Month ranges
+    const { start: startThisMonth, end: endThisMonth } = getMonthRange(currMonth, currYear);
+    const { start: startLastMonth, end: endLastMonth } = getMonthRange(prevMonth, prevMonthYear);
 
-    const coursesLastMonth = tutors.filter((course) => new Date(course.createdAt).getFullYear === currYear && new Date(course.createdAt).getMonth() === currMonth - 1).length;
-
-    const coursesThisMonth = courses.filter((course) => new Date(course.createdAt).getFullYear === currYear && new Date(course.createdAt).getMonth() === currMonth).length;
-
-    const studentsLastMonth = students.filter((student) => new Date(student.createdAt).getFullYear === currYear && new Date(student.createdAt).getMonth() === currMonth - 1).length;
-
-    const studentsThisMonth = students.filter((student) => new Date(student.createdAt).getFullYear === currYear && new Date(student.createdAt).getMonth() === currMonth).length;
-
-    return res.status(200).json({ studentsLastMonth, studentsThisMonth, coursesLastMonth, coursesThisMonth, tutorsLastMonth, tutorsThisMonth });
+    const [
+        tutorsThisMonth,
+        tutorsLastMonth,
+        coursesThisMonth,
+        coursesLastMonth,
+        studentsThisMonth,
+        studentsLastMonth
+    ] = await Promise.all([
+        Tutor.countDocuments({ createdAt: { $gte: startThisMonth, $lte: endThisMonth } }),
+        Tutor.countDocuments({ createdAt: { $gte: startLastMonth, $lte: endLastMonth } }),
+        Course.countDocuments({ createdAt: { $gte: startThisMonth, $lte: endThisMonth } }),
+        Course.countDocuments({ createdAt: { $gte: startLastMonth, $lte: endLastMonth } }),
+        User.countDocuments({ createdAt: { $gte: startThisMonth, $lte: endThisMonth } }),
+        User.countDocuments({ createdAt: { $gte: startLastMonth, $lte: endLastMonth } })
+    ]);
+    return res.status(200).json({
+        tutorsThisMonth,
+        tutorsLastMonth,
+        coursesThisMonth,
+        coursesLastMonth,
+        studentsThisMonth,
+        studentsLastMonth
+    });
 
 }
 

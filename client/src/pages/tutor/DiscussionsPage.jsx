@@ -111,9 +111,19 @@ export default function DiscussionsPage() {
         setDiscussionChat(discussion);
       });
 
+      socket.on("message-sent", (message) => {
+        setSendingMsg(false);
+      });
+
+      socket.on("discusion-created", (discussion) => {
+        setDiscussionChat(discussion);
+        setDiscussions((prev) => [...prev, discussion]);
+      });
+
       return () => {
         socket.off("add-discussion");
         socket.off("join-discussion");
+        socket.off("message-sent");
         socket.off("delete-message");
       };
     }
